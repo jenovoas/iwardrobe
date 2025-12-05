@@ -22,6 +22,7 @@ export const useHandGestures = (videoRef: React.RefObject<HTMLVideoElement | nul
     const lastXRef = useRef<number | null>(null);
     const lastTimeRef = useRef<number>(0);
     const gestureCooldownRef = useRef<number>(0);
+    const lastTimestampRef = useRef<number>(0);
 
     useEffect(() => {
         const createGestureRecognizer = async () => {
@@ -73,10 +74,20 @@ export const useHandGestures = (videoRef: React.RefObject<HTMLVideoElement | nul
 
         const detect = () => {
             if (videoRef.current && videoRef.current.readyState === 4) {
+                // Use performance.now() for monotonically increasing timestamps
+                const currentTimestamp = performance.now();
+
+                // Ensure timestamp is always increasing
+                if (currentTimestamp <= lastTimestampRef.current) {
+                    requestRef.current = requestAnimationFrame(detect);
+                    return;
+                }
+
                 const results: GestureRecognizerResult = gestureRecognizer.recognizeForVideo(
                     videoRef.current,
-                    Date.now()
+                    currentTimestamp
                 );
+                lastTimestampRef.current = currentTimestamp;
 
                 const currentTime = Date.now();
 

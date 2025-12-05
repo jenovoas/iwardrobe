@@ -11,6 +11,7 @@ export const usePoseLandmarker = (videoRef: React.RefObject<HTMLVideoElement | n
     const [poseLandmarker, setPoseLandmarker] = useState<PoseLandmarker | null>(null);
     const [landmarks, setLandmarks] = useState<PoseLandmarkerResult | null>(null);
     const requestRef = useRef<number>(0);
+    const lastTimestampRef = useRef<number>(0);
 
     useEffect(() => {
         const createPoseLandmarker = async () => {
@@ -18,11 +19,11 @@ export const usePoseLandmarker = (videoRef: React.RefObject<HTMLVideoElement | n
                 const vision = await FilesetResolver.forVisionTasks(
                     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
                 );
-                
+
                 // Try GPU first, fallback to CPU for better browser compatibility
                 let landmarker: PoseLandmarker | null = null;
                 let delegate: "GPU" | "CPU" = "GPU";
-                
+
                 try {
                     landmarker = await PoseLandmarker.createFromOptions(vision, {
                         baseOptions: {
@@ -44,7 +45,7 @@ export const usePoseLandmarker = (videoRef: React.RefObject<HTMLVideoElement | n
                         runningMode: "VIDEO",
                     });
                 }
-                
+
                 if (landmarker) {
                     console.log(`Pose landmarker initialized with ${delegate} delegate`);
                     setPoseLandmarker(landmarker);
@@ -62,11 +63,18 @@ export const usePoseLandmarker = (videoRef: React.RefObject<HTMLVideoElement | n
 
         const detect = () => {
             if (videoRef.current && videoRef.current.readyState === 4) {
-                const results = poseLandmarker.detectForVideo(
-                    videoRef.current,
-                    Date.now()
-                );
-                setLandmarks(results);
+                // Use performance.now() for monotonically increasing timestamps
+                const currentTimestamp = performance.now();
+
+                // Ensure timestamp is always increasing
+                if (currentTimestamp > lastTimestampRef.current) {
+                    const results = poseLandmarker.detectForVideo(
+                        videoRef.current,
+                        currentTimestamp
+                    );
+                    setLandmarks(results);
+                    lastTimestampRef.current = currentTimestamp;
+                }
             }
             requestRef.current = requestAnimationFrame(detect);
         };

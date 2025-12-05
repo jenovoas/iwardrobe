@@ -70,6 +70,7 @@ export function useAmbientLight(videoRef?: React.RefObject<HTMLVideoElement | nu
     const [isMounted, setIsMounted] = useState(false);
     const [lightLevel, setLightLevel] = useState<LightLevel>('normal');
     const [manualOverride, setManualOverride] = useState<LightLevel | null>(null);
+    // Always start with normal scheme to match SSR
     const [colorScheme, setColorScheme] = useState<ColorScheme>(COLOR_SCHEMES.normal);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const animationFrameRef = useRef<number | null>(null);
@@ -81,10 +82,13 @@ export function useAmbientLight(videoRef?: React.RefObject<HTMLVideoElement | nu
     }, []);
 
     // Update color scheme when manual override or light level changes
+    // Only update after component is mounted to avoid hydration mismatch
     useEffect(() => {
+        if (!isMounted) return;
+
         const effectiveLevel = manualOverride || lightLevel;
         setColorScheme(COLOR_SCHEMES[effectiveLevel]);
-    }, [lightLevel, manualOverride]);
+    }, [lightLevel, manualOverride, isMounted]);
 
     useEffect(() => {
         // Don't run until mounted on client or if manual override is active
