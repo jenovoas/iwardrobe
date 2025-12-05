@@ -130,10 +130,11 @@ export default function Home() {
           transition={{ duration: 0.8 }}
           className="flex justify-between items-start p-8"
         >
-          <div className="flex flex-col p-3 rounded-xl backdrop-blur-md bg-black/10">
-            <h1 className="text-4xl font-bold tracking-widest text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]" aria-label="iWARDROBE Application">iWARDROBE</h1>
-            <span className="text-sm opacity-90 text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">Smart Mirror OS v3.0</span>
-          </div>
+          <div className="flex flex-col">
+            <div className="p-3 rounded-xl backdrop-blur-md bg-black/10 w-fit">
+              <h1 className="text-4xl font-bold tracking-widest text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]" aria-label="iWARDROBE Application">iWARDROBE</h1>
+              <span className="text-sm opacity-90 text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">Smart Mirror OS v3.0</span>
+            </div>
             <WeatherWidget videoRef={videoRef} />
             <WardrobeWidgets
               handPosition={handPosition}
@@ -306,14 +307,14 @@ export default function Home() {
         onResolutionChange={setSelectedResolution}
       />
       {
-    selectedClothingItem && (
-      <ClothingDetailPanel
-        item={selectedClothingItem}
-        onClose={handleCloseDetail}
-        onTryOn={handleTryOn}
-      />
-    )
-  }
+        selectedClothingItem && (
+          <ClothingDetailPanel
+            item={selectedClothingItem}
+            onClose={handleCloseDetail}
+            onTryOn={handleTryOn}
+          />
+        )
+      }
     </main >
   );
 }
