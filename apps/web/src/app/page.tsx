@@ -11,6 +11,8 @@ import VirtualTryOn from "@/components/mirror/VirtualTryOn";
 import WeatherWidget from "@/components/widgets/WeatherWidget";
 import WardrobeWidgets from "@/components/widgets/WardrobeWidgets";
 import ClothingDetailPanel from "@/components/widgets/ClothingDetailPanel";
+import HairStyleWidget from "@/components/widgets/HairStyleWidget";
+import BeardStyleWidget from "@/components/widgets/BeardStyleWidget";
 import { useSmartMirror } from "@/hooks/useSmartMirror";
 import { ClothingItem } from "@/data/clothingData";
 import { motion } from "framer-motion";
@@ -45,7 +47,7 @@ export default function Home() {
   const [selectedClothingItem, setSelectedClothingItem] = React.useState<ClothingItem | null>(null);
 
   // Detect ambient light for adaptive UI colors
-  const { lightLevel, isMounted } = useAmbientLight(videoRef);
+  const { lightLevel, isMounted, toggleLightMode, isManualMode } = useAmbientLight(videoRef);
 
   // Handle item selection and try-on
   const handleItemSelect = (item: ClothingItem) => {
@@ -122,7 +124,8 @@ export default function Home() {
               <div className="text-xl font-light">Wednesday, Dec 4</div>
             </div>
 
-            <div className="flex items-center gap-4">
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
               {user ? (
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-green-400">● {user.email}</span>
@@ -131,7 +134,7 @@ export default function Home() {
               ) : (
                 <button
                   onClick={() => setIsLoginOpen(true)}
-                  className={`px-4 py-1 rounded-full text-sm transition-all duration-500 ${!isMounted
+                  className={`px-4 py-2 rounded-full text-sm transition-all duration-500 backdrop-blur-xl ${!isMounted
                     ? 'bg-white/10 hover:bg-white/20'
                     : lightLevel === 'bright'
                       ? 'bg-gray-900/80 border border-gray-700/80 hover:bg-gray-800/90'
@@ -146,7 +149,7 @@ export default function Home() {
               )}
               <button
                 onClick={() => setIsSettingsOpen(true)}
-                className={`p-2 rounded-full backdrop-blur-md transition-all duration-500 ${!isMounted
+                className={`p-2 rounded-full backdrop-blur-xl transition-all duration-500 ${!isMounted
                   ? 'bg-white/10 hover:bg-white/20'
                   : lightLevel === 'bright'
                     ? 'bg-gray-900/80 border border-gray-700/80 hover:bg-gray-800/90'
@@ -158,7 +161,28 @@ export default function Home() {
               >
                 <span className="text-xl">⚙️</span>
               </button>
+              <button
+                onClick={toggleLightMode}
+                className={`p-2 rounded-full backdrop-blur-xl transition-all duration-500 ${!isMounted
+                  ? 'bg-white/10 hover:bg-white/20'
+                  : lightLevel === 'bright'
+                    ? 'bg-gray-900/80 border border-gray-700/80 hover:bg-gray-800/90'
+                    : lightLevel === 'normal'
+                      ? 'bg-white/10 hover:bg-white/20'
+                      : 'bg-white/10 hover:bg-white/20'
+                  }`}
+                aria-label="Toggle Light Mode"
+                title={isManualMode ? `Manual: ${lightLevel}` : `Auto: ${lightLevel}`}
+              >
+                <span className="text-xl">
+                  {lightLevel === 'bright' ? '☀️' : lightLevel === 'dark' ? '🌙' : '💡'}
+                </span>
+              </button>
             </div>
+
+            {/* Style Widgets */}
+            <HairStyleWidget videoRef={videoRef} />
+            <BeardStyleWidget videoRef={videoRef} />
           </div>
         </motion.header>
 
@@ -218,13 +242,15 @@ export default function Home() {
         selectedResolution={selectedResolution}
         onResolutionChange={setSelectedResolution}
       />
-      {selectedClothingItem && (
-        <ClothingDetailPanel
-          item={selectedClothingItem}
-          onClose={handleCloseDetail}
-          onTryOn={handleTryOn}
-        />
-      )}
-    </main>
+      {
+        selectedClothingItem && (
+          <ClothingDetailPanel
+            item={selectedClothingItem}
+            onClose={handleCloseDetail}
+            onTryOn={handleTryOn}
+          />
+        )
+      }
+    </main >
   );
 }

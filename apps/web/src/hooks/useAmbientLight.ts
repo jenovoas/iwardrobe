@@ -69,6 +69,7 @@ const COLOR_SCHEMES: Record<LightLevel, ColorScheme> = {
 export function useAmbientLight(videoRef?: React.RefObject<HTMLVideoElement | null>) {
     const [isMounted, setIsMounted] = useState(false);
     const [lightLevel, setLightLevel] = useState<LightLevel>('normal');
+    const [manualOverride, setManualOverride] = useState<LightLevel | null>(null);
     const [colorScheme, setColorScheme] = useState<ColorScheme>(COLOR_SCHEMES.normal);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const animationFrameRef = useRef<number | null>(null);
@@ -79,9 +80,15 @@ export function useAmbientLight(videoRef?: React.RefObject<HTMLVideoElement | nu
         setIsMounted(true);
     }, []);
 
+    // Update color scheme when manual override or light level changes
     useEffect(() => {
-        // Don't run until mounted on client
-        if (!isMounted || !videoRef?.current) {
+        const effectiveLevel = manualOverride || lightLevel;
+        setColorScheme(COLOR_SCHEMES[effectiveLevel]);
+    }, [lightLevel, manualOverride]);
+
+    useEffect(() => {
+        // Don't run until mounted on client or if manual override is active
+        if (!isMounted || !videoRef?.current || manualOverride) {
             return;
         }
 
@@ -144,7 +151,6 @@ export function useAmbientLight(videoRef?: React.RefObject<HTMLVideoElement | nu
                     // Only update if the level changed
                     if (newLightLevel !== lightLevel) {
                         setLightLevel(newLightLevel);
-                        setColorScheme(COLOR_SCHEMES[newLightLevel]);
                     }
 
                     lastUpdateRef.current = now;
@@ -165,7 +171,31 @@ export function useAmbientLight(videoRef?: React.RefObject<HTMLVideoElement | nu
                 cancelAnimationFrame(animationFrameRef.current);
             }
         };
-    }, [isMounted, videoRef, lightLevel]);
+    }, [isMounted, videoRef, lightLevel, manualOverride]);
 
-    return { lightLevel, colorScheme, isMounted };
+    const toggleLightMode = () => {
+        if (!manualOverride) {
+            // Start with bright mode when enabling manual override
+            setManualOverride('bright');
+        } else if (manualOverride === 'bright') {
+            setManualOverride('normal');
+        } else if (manualOverride === 'normal') {
+            setManualOverride('dark');
+        } else {
+            // Return to auto mode
+            setManualOverride(null);
+        }
+    };
+
+    const effectiveLightLevel = manualOverride || lightLevel;
+
+    return {
+        lightLevel: effectiveLightLevel,
+        colorScheme,
+        isMounted,
+        toggleLightMode,
+        isManualMode: manualOverride !== null,
+        autoDetectedLevel: lightLevel
+    };
 }
+

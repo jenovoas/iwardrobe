@@ -91,17 +91,29 @@ const ChatInterface = ({ isListening, onToggleListening }: ChatInterfaceProps) =
     };
 
     const [messages, setMessages] = useState<Message[]>([
-        { id: "1", role: "assistant", text: "¡Hola! Soy ARIA. ¿En qué puedo ayudarte hoy?" },
+        { id: "1", role: "assistant", text: "mejoramos tu estilo?" },
     ]);
     const [input, setInput] = useState("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const recognitionRef = useRef<SpeechRecognition | null>(null);
     const isListeningRef = useRef(isListening);
+    const hasGreetedRef = useRef(false);
 
     // Keep ref in sync with prop
     useEffect(() => {
         isListeningRef.current = isListening;
     }, [isListening]);
+
+    // Speak initial greeting on mount
+    useEffect(() => {
+        if (!hasGreetedRef.current) {
+            hasGreetedRef.current = true;
+            // Wait a bit for voices to load
+            setTimeout(() => {
+                speak("mejoramos tu estilo?");
+            }, 500);
+        }
+    }, []);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
