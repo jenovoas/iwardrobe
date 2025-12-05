@@ -35,8 +35,7 @@ export default function Home() {
     setSelectedMicId,
     selectedResolution,
     setSelectedResolution,
-    // @ts-ignore
-    login, // We need to access login from useSmartMirror or useAuth directly
+    login,
     swipeDirection,
     handPosition,
     isPointing,

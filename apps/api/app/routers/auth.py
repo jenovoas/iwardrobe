@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
@@ -28,9 +29,10 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     return {"access_token": access_token, "token_type": "bearer"}
 
 # Google OAuth Settings
-GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID"  # REPLACE THIS
-GOOGLE_CLIENT_SECRET = "YOUR_GOOGLE_CLIENT_SECRET"  # REPLACE THIS
-GOOGLE_REDIRECT_URI = "http://localhost:8000/auth/google/callback"
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
+GOOGLE_REDIRECT_URI = os.environ.get("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/google/callback")
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
 
 @router.get("/google/login")
 async def login_google():
@@ -87,7 +89,7 @@ async def callback_google(code: str, db: AsyncSession = Depends(database.get_db)
         )
         
         # Redirect to frontend with token
-        return RedirectResponse(url=f"http://localhost:3000?token={jwt_token}")
+        return RedirectResponse(url=f"{FRONTEND_URL}?token={jwt_token}")
 
 @router.post("/users/", response_model=schemas.User)
 async def create_user(user: schemas.UserCreate, db: AsyncSession = Depends(database.get_db)):
