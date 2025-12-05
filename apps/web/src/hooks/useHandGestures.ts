@@ -7,13 +7,21 @@ import {
     GestureRecognizerResult,
 } from "@mediapipe/tasks-vision";
 
+export interface HandPosition {
+    x: number; // 0-1 normalized
+    y: number; // 0-1 normalized
+}
+
 export const useHandGestures = (videoRef: React.RefObject<HTMLVideoElement | null>) => {
     const [gestureRecognizer, setGestureRecognizer] = useState<GestureRecognizer | null>(null);
     const [gesture, setGesture] = useState<string | null>(null);
     const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
+    const [handPosition, setHandPosition] = useState<HandPosition | null>(null);
+    const [isPointing, setIsPointing] = useState(false);
     const requestRef = useRef<number>(0);
     const lastXRef = useRef<number | null>(null);
     const lastTimeRef = useRef<number>(0);
+    const gestureCooldownRef = useRef<number>(0);
 
     useEffect(() => {
         const createGestureRecognizer = async () => {
@@ -70,41 +78,45 @@ export const useHandGestures = (videoRef: React.RefObject<HTMLVideoElement | nul
                     Date.now()
                 );
 
-                if (results.gestures.length > 0) {
+                const currentTime = Date.now();
+
+                if (results.gestures.length > 0 && results.landmarks && results.landmarks.length > 0) {
                     const topGesture = results.gestures[0][0];
+                    const handLandmarks = results.landmarks[0];
+
+                    // Track index finger tip position (landmark 8)
+                    const indexFingerTip = handLandmarks[8];
+                    setHandPosition({ x: indexFingerTip.x, y: indexFingerTip.y });
+
                     if (topGesture && topGesture.score > 0.5) {
                         setGesture(topGesture.categoryName);
 
+                        // Detect Pointing Gesture (index finger extended)
+                        if (topGesture.categoryName === "Pointing_Up") {
+                            setIsPointing(true);
+                        } else {
+                            setIsPointing(false);
+                        }
+
                         // Swipe Detection Logic
-                        if (topGesture.categoryName === "Open_Palm" && results.landmarks && results.landmarks.length > 0) {
-                            const handLandmarks = results.landmarks[0];
+                        if (topGesture.categoryName === "Open_Palm" && currentTime > gestureCooldownRef.current) {
                             const wrist = handLandmarks[0]; // Wrist landmark
                             const currentX = wrist.x;
-                            const currentTime = Date.now();
 
                             if (lastXRef.current !== null) {
                                 const deltaX = currentX - lastXRef.current;
                                 const deltaTime = currentTime - lastTimeRef.current;
                                 const velocity = deltaX / deltaTime; // Units per ms
 
-                                // Thresholds (adjust as needed)
-                                // Note: X increases from left to right (0 to 1)
-                                // But in mirrored video, it might be flipped. 
-                                // Usually MediaPipe returns normalized coordinates [0, 1].
-                                // If mirrored: Left side of screen is x=1, Right is x=0? Or standard?
-                                // Let's assume standard: 0 (left) -> 1 (right).
-                                // Swipe Right: x increases.
-
-                                if (Math.abs(deltaX) > 0.05 && deltaTime < 200) {
-                                    if (deltaX < -0.05) { // Moving Left (in camera view, might be Right in mirror?)
-                                        // If mirrored, moving hand right (user's right) means x decreases?
-                                        // Let's test standard first.
-                                        // Actually, let's just expose the direction and flip if needed in UI.
-                                        // Standard: x increases -> Right.
-                                        setSwipeDirection("right");
-                                        setTimeout(() => setSwipeDirection(null), 1000); // Reset after 1s
-                                    } else if (deltaX > 0.05) {
+                                // Thresholds for swipe detection
+                                if (Math.abs(deltaX) > 0.15 && deltaTime < 300) {
+                                    if (deltaX < -0.15) {
                                         setSwipeDirection("left");
+                                        gestureCooldownRef.current = currentTime + 1000; // 1s cooldown
+                                        setTimeout(() => setSwipeDirection(null), 1000);
+                                    } else if (deltaX > 0.15) {
+                                        setSwipeDirection("right");
+                                        gestureCooldownRef.current = currentTime + 1000;
                                         setTimeout(() => setSwipeDirection(null), 1000);
                                     }
                                 }
@@ -117,10 +129,13 @@ export const useHandGestures = (videoRef: React.RefObject<HTMLVideoElement | nul
                         }
                     } else {
                         setGesture(null);
+                        setIsPointing(false);
                         lastXRef.current = null;
                     }
                 } else {
                     setGesture(null);
+                    setHandPosition(null);
+                    setIsPointing(false);
                     lastXRef.current = null;
                 }
             }
@@ -136,5 +151,5 @@ export const useHandGestures = (videoRef: React.RefObject<HTMLVideoElement | nul
         };
     }, [gestureRecognizer, videoRef]);
 
-    return { gesture, swipeDirection };
+    return { gesture, swipeDirection, handPosition, isPointing };
 };

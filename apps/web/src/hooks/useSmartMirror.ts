@@ -64,7 +64,7 @@ export const useSmartMirror = () => {
         };
     }, []); // Empty deps - we want this to run once and monitor the ref
 
-    const { gesture, swipeDirection } = useHandGestures(videoRef);
+    const { gesture, swipeDirection, handPosition, isPointing } = useHandGestures(videoRef);
 
     const toggleLoginModal = () => setIsLoginOpen((prev) => !prev);
     const toggleSettingsModal = () => setIsSettingsOpen((prev) => !prev);
@@ -109,5 +109,7 @@ export const useSmartMirror = () => {
         selectedResolution,
         setSelectedResolution,
         swipeDirection,
+        handPosition,
+        isPointing,
     };
 };

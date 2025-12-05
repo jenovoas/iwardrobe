@@ -10,7 +10,9 @@ import SettingsModal from "@/components/settings/SettingsModal";
 import VirtualTryOn from "@/components/mirror/VirtualTryOn";
 import WeatherWidget from "@/components/widgets/WeatherWidget";
 import WardrobeWidgets from "@/components/widgets/WardrobeWidgets";
+import ClothingDetailPanel from "@/components/widgets/ClothingDetailPanel";
 import { useSmartMirror } from "@/hooks/useSmartMirror";
+import { ClothingItem } from "@/data/clothingData";
 import { motion } from "framer-motion";
 
 export default function Home() {
@@ -33,18 +35,35 @@ export default function Home() {
     // @ts-ignore
     login, // We need to access login from useSmartMirror or useAuth directly
     swipeDirection,
+    handPosition,
+    isPointing,
   } = useSmartMirror();
 
   const [isAriaListening, setIsAriaListening] = React.useState(false);
   const [isTryOnActive, setIsTryOnActive] = React.useState(false);
+  const [selectedClothingItem, setSelectedClothingItem] = React.useState<ClothingItem | null>(null);
 
-  // Handle Swipe Gesture
+  // Handle item selection and try-on
+  const handleItemSelect = (item: ClothingItem) => {
+    setSelectedClothingItem(item);
+  };
+
+  const handleTryOn = (item: ClothingItem) => {
+    setIsTryOnActive(true);
+    setSelectedClothingItem(null);
+    console.log("Trying on:", item.name);
+  };
+
+  const handleCloseDetail = () => {
+    setSelectedClothingItem(null);
+  };
+
+  // Handle Swipe Gesture for try-on
   React.useEffect(() => {
-    if (swipeDirection === "right") {
-      setIsTryOnActive(true);
-      // Optional: Play a sound or visual feedback
+    if (swipeDirection === "right" && selectedClothingItem) {
+      handleTryOn(selectedClothingItem);
     }
-  }, [swipeDirection]);
+  }, [swipeDirection, selectedClothingItem]);
 
   // Handle Google Login Callback
   React.useEffect(() => {
@@ -76,7 +95,12 @@ export default function Home() {
             <h1 className="text-4xl font-light tracking-widest" aria-label="iWARDROBE Application">iWARDROBE</h1>
             <span className="text-sm opacity-70">Smart Mirror OS v3.0</span>
             <WeatherWidget />
-            <WardrobeWidgets />
+            <WardrobeWidgets
+              handPosition={handPosition}
+              isPointing={isPointing}
+              onItemSelect={handleItemSelect}
+              swipeDirection={swipeDirection}
+            />
             {gesture && (
               <motion.div
                 initial={{ scale: 0 }}
@@ -175,6 +199,13 @@ export default function Home() {
         selectedResolution={selectedResolution}
         onResolutionChange={setSelectedResolution}
       />
+      {selectedClothingItem && (
+        <ClothingDetailPanel
+          item={selectedClothingItem}
+          onClose={handleCloseDetail}
+          onTryOn={handleTryOn}
+        />
+      )}
     </main>
   );
 }
