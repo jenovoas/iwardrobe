@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAmbientLight } from '@/hooks/useAmbientLight';
 import { ShoppingBag, Search, TrendingUp, Wrench } from 'lucide-react';
 
+import { ClothingItem } from '@/data/clothingData';
+
 interface ShoppingOption {
     id: string;
     name: string;
@@ -14,9 +16,10 @@ interface ShoppingWidgetProps {
     videoRef?: React.RefObject<HTMLVideoElement | null>;
     isFocused?: boolean;
     swipeDirection?: "left" | "right" | "up" | "down" | null;
+    selectedItem?: ClothingItem | null;
 }
 
-const ShoppingWidget: React.FC<ShoppingWidgetProps> = ({ videoRef, isFocused = false, swipeDirection }) => {
+const ShoppingWidget: React.FC<ShoppingWidgetProps> = ({ videoRef, isFocused = false, swipeDirection, selectedItem }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const { lightLevel, colorScheme, isMounted } = useAmbientLight(videoRef);
@@ -32,14 +35,24 @@ const ShoppingWidget: React.FC<ShoppingWidgetProps> = ({ videoRef, isFocused = f
 
     const handleSearchValue = () => {
         setSelectedOption('search');
-        // TODO: Implement search garment value functionality
-        console.log('Buscar valor de la prenda');
+        if (selectedItem) {
+            const query = encodeURIComponent(`${selectedItem.brand} ${selectedItem.name} precio`);
+            window.open(`https://www.google.com/search?q=${query}`, '_blank');
+        } else {
+            // Generic search if no item selected
+            window.open('https://www.google.com/search?q=ropa+moda+hombre+precio', '_blank');
+        }
     };
 
     const handleComparePrice = () => {
         setSelectedOption('compare');
-        // TODO: Implement compare store prices functionality
-        console.log('Comparar valor en el comercio');
+        if (selectedItem) {
+            const query = encodeURIComponent(`${selectedItem.brand} ${selectedItem.name}`);
+            window.open(`https://www.google.com/search?q=${query}&tbm=shop`, '_blank');
+        } else {
+            // Generic shopping search
+            window.open('https://www.google.com/search?q=moda+hombre&tbm=shop', '_blank');
+        }
     };
 
     const handleRepair = () => {

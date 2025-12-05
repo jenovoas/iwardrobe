@@ -357,6 +357,7 @@ export default function Home() {
                 videoRef={videoRef}
                 isFocused={true}
                 swipeDirection={swipeDirection}
+                selectedItem={selectedClothingItem}
               />
             )}
           </div>
