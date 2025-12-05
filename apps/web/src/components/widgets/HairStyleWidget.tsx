@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAmbientLight } from '@/hooks/useAmbientLight';
-import { Scissors } from 'lucide-react';
+import { Scissors, User } from 'lucide-react';
 
 interface HairStyle {
     id: string;
     name: string;
-    icon: string;
+    icon: React.ReactNode;
 }
 
 interface HairStyleWidgetProps {
@@ -16,9 +16,9 @@ interface HairStyleWidgetProps {
 }
 
 const hairStyles: HairStyle[] = [
-    { id: '1', name: 'Corte Clásico', icon: '✂️' },
-    { id: '2', name: 'Fade Moderno', icon: '💈' },
-    { id: '3', name: 'Cabello Largo', icon: '🦱' },
+    { id: '1', name: 'Corte Clásico', icon: <Scissors className="w-5 h-5" /> },
+    { id: '2', name: 'Fade Moderno', icon: <Scissors className="w-5 h-5 rotate-90" /> },
+    { id: '3', name: 'Cabello Largo', icon: <User className="w-5 h-5" /> },
 ];
 
 const HairStyleWidget: React.FC<HairStyleWidgetProps> = ({ videoRef, isFocused = false, swipeDirection }) => {
@@ -63,7 +63,7 @@ const HairStyleWidget: React.FC<HairStyleWidgetProps> = ({ videoRef, isFocused =
                         whileTap={{ scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     >
-                        <span className={`text-2xl transition-transform block ${isExpanded ? 'scale-110' : 'group-hover:scale-105'}`}>💇‍♂️</span>
+                        <Scissors className={`w-6 h-6 transition-transform block ${isExpanded ? 'scale-110' : 'group-hover:scale-105'}`} />
                     </motion.div>
                     <span className={`text-sm font-light ${isExpanded ? 'font-medium' : (isMounted ? colorScheme.textOpacity : 'opacity-80')}`}>
                         Estilo de Cabello

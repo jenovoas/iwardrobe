@@ -18,7 +18,7 @@ import { useSmartMirror } from "@/hooks/useSmartMirror";
 import { ClothingItem } from "@/data/clothingData";
 import { motion } from "framer-motion";
 import { useAmbientLight } from "@/hooks/useAmbientLight";
-import { Settings, Sun, Moon, Lightbulb } from "lucide-react";
+import { Settings, Sun, Moon, Lightbulb, Shirt, Scissors, User, ShoppingBag } from "lucide-react";
 
 export default function Home() {
   const {
@@ -52,7 +52,12 @@ export default function Home() {
   const [activeView, setActiveView] = React.useState<'menu' | 'wardrobe' | 'hair' | 'beard' | 'shopping'>('menu');
   const [focusedWidgetIndex, setFocusedWidgetIndex] = React.useState(0);
   const WIDGET_LABELS = ['Wardrobe', 'Hair Style', 'Beard Style', 'Shopping'];
-  const WIDGET_ICONS = ['👕', '💇‍♂️', '🧔', '🛍️'];
+  const WIDGET_ICONS = [
+    <Shirt key="wardrobe" />,
+    <Scissors key="hair" />,
+    <User key="beard" />,
+    <ShoppingBag key="shopping" />
+  ];
   const WIDGET_COUNT = WIDGET_LABELS.length;
 
   // Handle Swipes for Navigation
@@ -171,8 +176,8 @@ export default function Home() {
           </div>
         )}
 
-        {/* Cursor for Pointing_Up */}
-        {gesture === "Pointing_Up" && handPosition && (
+        {/* Cursor for Pointing_Up or Open_Palm */}
+        {(gesture === "Pointing_Up" || gesture === "Open_Palm") && handPosition && (
           <div
             className="absolute w-8 h-8 border-2 border-white rounded-full bg-white/20 pointer-events-none z-50 transition-all duration-75 ease-out shadow-[0_0_15px_rgba(255,255,255,0.5)]"
             style={{

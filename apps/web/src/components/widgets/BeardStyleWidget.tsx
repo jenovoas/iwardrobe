@@ -6,7 +6,7 @@ import { User } from 'lucide-react';
 interface BeardStyle {
     id: string;
     name: string;
-    icon: string;
+    icon: React.ReactNode;
 }
 
 interface BeardStyleWidgetProps {
@@ -16,10 +16,9 @@ interface BeardStyleWidgetProps {
 }
 
 const beardStyles: BeardStyle[] = [
-    { id: '1', name: 'Barba Completa', icon: '🧔' },
-    { id: '2', name: 'Barba Corta', icon: '🧔‍♂️' },
-    { id: '3', name: 'Perilla', icon: '👨‍🦰' },
-    { id: '4', name: 'Afeitado', icon: '🪒' },
+    { id: '1', name: 'Barba Completa', icon: <User className="w-5 h-5" /> },
+    { id: '2', name: 'Candado', icon: <User className="w-5 h-5 opacity-80" /> },
+    { id: '3', name: 'Afeitado', icon: <User className="w-5 h-5 opacity-60" /> },
 ];
 
 const BeardStyleWidget: React.FC<BeardStyleWidgetProps> = ({ videoRef, isFocused = false, swipeDirection }) => {
@@ -64,7 +63,7 @@ const BeardStyleWidget: React.FC<BeardStyleWidgetProps> = ({ videoRef, isFocused
                         whileTap={{ scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     >
-                        <span className={`text-2xl transition-transform block ${isExpanded ? 'scale-110' : 'group-hover:scale-105'}`}>🧔</span>
+                        <User className={`w-6 h-6 transition-transform block ${isExpanded ? 'scale-110' : 'group-hover:scale-105'}`} />
                     </motion.div>
                     <span className={`text-sm font-light ${isExpanded ? 'font-medium' : (isMounted ? colorScheme.textOpacity : 'opacity-80')}`}>
                         Estilo de Barba

@@ -44,7 +44,9 @@ export const useHandGestures = (videoRef: React.RefObject<HTMLVideoElement | nul
                             delegate: "GPU",
                         },
                         runningMode: "VIDEO",
-                        numHands: 1, // Added numHands: 1 as per the provided snippet
+                        numHands: 1,
+                        minHandDetectionConfidence: 0.3,
+                        minTrackingConfidence: 0.3,
                     });
                 } catch (gpuError) {
                     console.warn("GPU delegate failed, falling back to CPU:", gpuError);
@@ -56,7 +58,9 @@ export const useHandGestures = (videoRef: React.RefObject<HTMLVideoElement | nul
                             delegate: "CPU",
                         },
                         runningMode: "VIDEO",
-                        numHands: 1, // Added numHands: 1 as per the provided snippet
+                        numHands: 1,
+                        minHandDetectionConfidence: 0.3,
+                        minTrackingConfidence: 0.3,
                     });
                 }
 
@@ -132,13 +136,17 @@ export const useHandGestures = (videoRef: React.RefObject<HTMLVideoElement | nul
                             }
 
                             // Swipe Detection Logic (Accumulated Displacement)
-                            if (topGesture.categoryName === "Pointing_Up" && currentTime > gestureCooldownRef.current) {
-                                const indexTip = handLandmarks[8]; // Index finger tip
+                            // Allow both Pointing_Up and Open_Palm to drive navigation for robustness
+                            const validNavigationGestures = ["Pointing_Up", "Open_Palm"];
+                            if (validNavigationGestures.includes(topGesture.categoryName) && currentTime > gestureCooldownRef.current) {
+                                // Prefer index tip for Pointing_Up, otherwise Wrist or Middle Finger TIP for Open_Palm
+                                // Using Index Tip (8) generally works well for both if we want cursor-like behavior
+                                const indexTip = handLandmarks[8];
                                 const currentX = indexTip.x;
                                 const currentY = indexTip.y;
 
                                 // Initialize start position if new gesture or just started
-                                if (!swipeStartPosRef.current || lastGestureRef.current !== "Pointing_Up") {
+                                if (!swipeStartPosRef.current || !validNavigationGestures.includes(lastGestureRef.current || "")) {
                                     swipeStartPosRef.current = { x: currentX, y: currentY };
                                 }
 
@@ -178,8 +186,9 @@ export const useHandGestures = (videoRef: React.RefObject<HTMLVideoElement | nul
                                     }
                                 }
                             } else {
-                                // Reset if not Pointing_Up
-                                if (topGesture.categoryName !== "Pointing_Up") {
+                                // Reset if not a valid navigation gesture
+                                const validNavigationGestures = ["Pointing_Up", "Open_Palm"];
+                                if (!validNavigationGestures.includes(topGesture.categoryName)) {
                                     swipeStartPosRef.current = null;
                                 }
                             }

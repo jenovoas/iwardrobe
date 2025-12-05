@@ -6,7 +6,7 @@ import { ShoppingBag, Search, TrendingUp, Wrench } from 'lucide-react';
 interface ShoppingOption {
     id: string;
     name: string;
-    icon: string;
+    icon: React.ReactNode;
     action: () => void;
 }
 
@@ -67,9 +67,9 @@ const ShoppingWidget: React.FC<ShoppingWidgetProps> = ({ videoRef, isFocused = f
     };
 
     const shoppingOptions: ShoppingOption[] = [
-        { id: 'search', name: 'Buscar valor', icon: '🔍', action: handleSearchValue },
-        { id: 'compare', name: 'Comparar precios', icon: '⚖️', action: handleComparePrice },
-        { id: 'repair', name: 'Reparar prenda', icon: '🧵', action: handleRepair },
+        { id: 'search', name: 'Buscar valor', icon: <Search className="w-5 h-5" />, action: handleSearchValue },
+        { id: 'compare', name: 'Comparar precios', icon: <TrendingUp className="w-5 h-5" />, action: handleComparePrice },
+        { id: 'repair', name: 'Reparar prenda', icon: <Wrench className="w-5 h-5" />, action: handleRepair },
     ];
 
     return (
@@ -100,7 +100,7 @@ const ShoppingWidget: React.FC<ShoppingWidgetProps> = ({ videoRef, isFocused = f
                         whileTap={{ scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     >
-                        <span className={`text-2xl transition-transform block ${isExpanded ? 'scale-110' : 'group-hover:scale-105'}`}>🛍️</span>
+                        <ShoppingBag className={`w-6 h-6 transition-transform block ${isExpanded ? 'scale-110' : 'group-hover:scale-105'}`} />
                     </motion.div>
                     <span className={`text-sm font-light ${isExpanded ? 'font-medium' : (isMounted ? colorScheme.textOpacity : 'opacity-80')}`}>
                         Comprar
