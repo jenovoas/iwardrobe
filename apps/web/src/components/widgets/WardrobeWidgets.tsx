@@ -111,7 +111,7 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
                                 transition-all duration-500 cursor-pointer group relative
                                 ${!isMounted
                                     ? isSelected
-                                        ? 'bg-blue-500/30 border-blue-400/50'
+                                        ? `${colorScheme.categorySelectedBg} ${colorScheme.categorySelectedBorder}`
                                         : 'bg-white/5 border-white/5 hover:bg-white/10'
                                     : isSelected
                                         ? `${colorScheme.categorySelectedBg} ${colorScheme.categorySelectedBorder}`
@@ -124,7 +124,7 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
                             {isSelected && (
                                 <motion.div
                                     layoutId="category-selector"
-                                    className={`absolute left-0 top-0 bottom-0 w-1 ${isMounted ? colorScheme.accentColor : 'bg-blue-400'} rounded-l-lg`}
+                                    className={`absolute left-0 top-0 bottom-0 w-1 ${isMounted ? colorScheme.accentColor : 'bg-white/30'} rounded-l-lg`}
                                     initial={false}
                                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                 />
@@ -177,7 +177,7 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
                                                         transition-all duration-500 cursor-pointer
                                                         ${!isMounted
                                                             ? isHovered
-                                                                ? 'bg-blue-500/20 border border-blue-400/30'
+                                                                ? `${colorScheme.itemHoveredBg} border ${colorScheme.itemHoveredBorder}`
                                                                 : 'bg-white/5 hover:bg-white/10'
                                                             : isHovered
                                                                 ? `${colorScheme.itemHoveredBg} border ${colorScheme.itemHoveredBorder}`
@@ -186,7 +186,7 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
                                                     `}
                                                 >
                                                     <div className="flex items-center gap-2">
-                                                        <div className={`w-2 h-2 rounded-full transition-colors duration-500 ${isHovered ? (isMounted ? colorScheme.accentColor : 'bg-blue-400') : 'bg-white/20'}`} />
+                                                        <div className={`w-2 h-2 rounded-full transition-colors duration-500 ${isHovered ? (isMounted ? colorScheme.accentColor : 'bg-white/40') : 'bg-white/20'}`} />
                                                         <span className={`text-xs ${isMounted ? colorScheme.textOpacity : 'opacity-80'}`}>{item.name}</span>
                                                     </div>
                                                     <span className="text-[10px] opacity-50">{item.color}</span>
@@ -207,7 +207,14 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="mt-4 p-2 bg-blue-500/20 border border-blue-400/30 rounded-xl text-xs text-center"
+                    className={`mt-4 p-2 rounded-xl text-xs text-center transition-all duration-500 backdrop-blur-md ${!isMounted
+                        ? 'bg-white/20 border border-white/30'
+                        : lightLevel === 'bright'
+                            ? 'bg-gray-900/80 border border-gray-700/80'
+                            : lightLevel === 'normal'
+                                ? 'bg-white/20 border border-white/30'
+                                : 'bg-white/20 border border-white/30'
+                        }`}
                 >
                     👆 Apunta para seleccionar
                 </motion.div>
@@ -223,7 +230,7 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
                         ? 'bg-gray-800/60 border border-gray-600/40'
                         : lightLevel === 'bright'
                             ? 'bg-yellow-500/30 border border-yellow-400/50'
-                            : 'bg-blue-500/20 border border-blue-400/30'
+                            : 'bg-white/20 border border-white/30'
                         }`}
                 >
                     {lightLevel === 'dark' && '🌙 Modo Oscuro'}

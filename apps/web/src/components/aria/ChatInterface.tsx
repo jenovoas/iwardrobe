@@ -286,7 +286,7 @@ const ChatInterface = ({ isListening, onToggleListening }: ChatInterfaceProps) =
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder={isListening ? "Escuchando..." : "Escribe algo..."}
-                    className={`w-full border border-white/20 rounded-full px-6 py-3 text-white placeholder-white/50 focus:outline-none focus:bg-white/20 transition-all backdrop-blur-sm ${isListening ? "bg-blue-500/10 border-blue-500/50" : "bg-white/10"}`}
+                    className={`w-full border border-white/20 rounded-full px-6 py-3 text-white placeholder-white/50 focus:outline-none focus:bg-white/20 transition-all backdrop-blur-sm ${isListening ? "bg-white/15 border-white/30" : "bg-white/10"}`}
                 />
             </form>
         </div>

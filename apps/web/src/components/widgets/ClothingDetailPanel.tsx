@@ -37,7 +37,7 @@ const ClothingDetailPanel: React.FC<ClothingDetailPanelProps> = ({ item, onClose
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Header */}
-                    <div className="relative h-48 bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                    <div className="relative h-48 bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center">
                         <button
                             onClick={onClose}
                             className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 transition-all flex items-center justify-center"
@@ -61,7 +61,7 @@ const ClothingDetailPanel: React.FC<ClothingDetailPanelProps> = ({ item, onClose
                         {/* Title */}
                         <div>
                             <h2 className="text-2xl font-light text-white mb-1">{item.name}</h2>
-                            <p className="text-sm text-blue-400">{item.brand}</p>
+                            <p className="text-sm text-white/70">{item.brand}</p>
                         </div>
 
                         {/* Details Grid */}
@@ -88,7 +88,7 @@ const ClothingDetailPanel: React.FC<ClothingDetailPanelProps> = ({ item, onClose
                         <div className="flex gap-3 pt-2">
                             <button
                                 onClick={() => onTryOn(item)}
-                                className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-medium py-3 px-6 rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/25"
+                                className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium py-3 px-6 rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-purple-500/25"
                             >
                                 ✨ Probar
                             </button>
@@ -101,8 +101,8 @@ const ClothingDetailPanel: React.FC<ClothingDetailPanelProps> = ({ item, onClose
                         </div>
 
                         {/* Gesture Hint */}
-                        <div className="bg-blue-500/10 border border-blue-400/20 rounded-lg p-3 text-center">
-                            <p className="text-xs text-blue-300">
+                        <div className="bg-white/10 border border-white/20 rounded-lg p-3 text-center">
+                            <p className="text-xs text-white/80">
                                 💡 Desliza a la derecha para probar esta prenda
                             </p>
                         </div>

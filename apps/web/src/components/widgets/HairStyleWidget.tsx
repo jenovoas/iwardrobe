@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAmbientLight } from '@/hooks/useAmbientLight';
+import { Scissors } from 'lucide-react';
 
 interface HairStyle {
     id: string;
@@ -30,12 +31,11 @@ const HairStyleWidget: React.FC<HairStyleWidgetProps> = ({ videoRef }) => {
             transition={{ delay: 0.6 }}
             className="w-full max-w-[220px] mt-6"
         >
-            {/* Category Header */}
             <motion.div
                 onClick={() => setIsExpanded(!isExpanded)}
                 className={`
                     flex items-center justify-between p-3 rounded-xl border 
-                    transition-all duration-500 cursor-pointer group relative backdrop-blur-xl
+                    transition-all duration-500 cursor-pointer group relative backdrop-blur-md
                     ${!isMounted
                         ? isExpanded
                             ? 'bg-white/15 border-white/10 shadow-lg'
@@ -47,9 +47,13 @@ const HairStyleWidget: React.FC<HairStyleWidgetProps> = ({ videoRef }) => {
                 `}
             >
                 <div className="flex items-center gap-3">
-                    <span className={`text-2xl transition-transform ${isExpanded ? 'scale-125' : 'group-hover:scale-110'}`}>
-                        💇
-                    </span>
+                    <motion.div
+                        whileHover={{ scale: 1.1, rotate: -15 }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                    >
+                        <Scissors className={`w-6 h-6 transition-transform ${isExpanded ? 'scale-110' : 'group-hover:scale-105'}`} />
+                    </motion.div>
                     <span className={`text-sm font-light ${isExpanded ? 'font-medium' : (isMounted ? colorScheme.textOpacity : 'opacity-80')}`}>
                         Estilo de Cabello
                     </span>
@@ -90,10 +94,10 @@ const HairStyleWidget: React.FC<HairStyleWidgetProps> = ({ videoRef }) => {
                                         onClick={() => setSelectedStyle(style.id)}
                                         className={`
                                             flex items-center justify-between p-2 rounded-md
-                                            transition-all duration-500 cursor-pointer backdrop-blur-xl
+                                            transition-all duration-500 cursor-pointer backdrop-blur-md
                                             ${!isMounted
                                                 ? isSelected
-                                                    ? 'bg-purple-500/20 border border-purple-400/30'
+                                                    ? `${colorScheme.itemHoveredBg} border ${colorScheme.itemHoveredBorder}`
                                                     : 'bg-white/10 hover:bg-white/15'
                                                 : isSelected
                                                     ? `${colorScheme.itemHoveredBg} border ${colorScheme.itemHoveredBorder}`
@@ -102,7 +106,7 @@ const HairStyleWidget: React.FC<HairStyleWidgetProps> = ({ videoRef }) => {
                                         `}
                                     >
                                         <div className="flex items-center gap-2">
-                                            <div className={`w-2 h-2 rounded-full transition-colors duration-500 ${isSelected ? (isMounted ? colorScheme.accentColor : 'bg-purple-400') : 'bg-white/20'}`} />
+                                            <div className={`w-2 h-2 rounded-full transition-colors duration-500 ${isSelected ? (isMounted ? colorScheme.accentColor : 'bg-white/40') : 'bg-white/20'}`} />
                                             <span className={`text-xs ${isMounted ? colorScheme.textOpacity : 'opacity-80'}`}>{style.name}</span>
                                         </div>
                                         <span className="text-xl">{style.icon}</span>

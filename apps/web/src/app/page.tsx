@@ -13,10 +13,12 @@ import WardrobeWidgets from "@/components/widgets/WardrobeWidgets";
 import ClothingDetailPanel from "@/components/widgets/ClothingDetailPanel";
 import HairStyleWidget from "@/components/widgets/HairStyleWidget";
 import BeardStyleWidget from "@/components/widgets/BeardStyleWidget";
+import ShoppingWidget from "@/components/widgets/ShoppingWidget";
 import { useSmartMirror } from "@/hooks/useSmartMirror";
 import { ClothingItem } from "@/data/clothingData";
 import { motion } from "framer-motion";
 import { useAmbientLight } from "@/hooks/useAmbientLight";
+import { Settings, Sun, Moon, Lightbulb } from "lucide-react";
 
 export default function Home() {
   const {
@@ -128,9 +130,10 @@ export default function Home() {
           transition={{ duration: 0.8 }}
           className="flex justify-between items-start p-8"
         >
-          <div className="flex flex-col">
-            <h1 className="text-4xl font-light tracking-widest" aria-label="iWARDROBE Application">iWARDROBE</h1>
-            <span className="text-sm opacity-70">Smart Mirror OS v3.0</span>
+          <div className="flex flex-col p-3 rounded-xl backdrop-blur-md bg-black/10">
+            <h1 className="text-4xl font-bold tracking-widest text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]" aria-label="iWARDROBE Application">iWARDROBE</h1>
+            <span className="text-sm opacity-90 text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">Smart Mirror OS v3.0</span>
+          </div>
             <WeatherWidget videoRef={videoRef} />
             <WardrobeWidgets
               handPosition={handPosition}
@@ -143,7 +146,14 @@ export default function Home() {
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="mt-4 px-3 py-1 bg-blue-500/50 rounded-full text-xs self-start"
+                className={`mt-4 px-3 py-1 rounded-full text-xs self-start transition-all duration-500 backdrop-blur-md ${!isMounted
+                  ? 'bg-white/20 border border-white/30'
+                  : lightLevel === 'bright'
+                    ? 'bg-gray-900/80 border border-gray-700/80'
+                    : lightLevel === 'normal'
+                      ? 'bg-white/20 border border-white/30'
+                      : 'bg-white/20 border border-white/30'
+                  }`}
               >
                 Gesture: {gesture}
               </motion.div>
@@ -169,7 +179,7 @@ export default function Home() {
               ) : (
                 <button
                   onClick={() => setIsLoginOpen(true)}
-                  className={`px-4 py-2 rounded-full text-sm transition-all duration-500 backdrop-blur-xl ${!isMounted
+                  className={`px-4 py-2 rounded-full text-sm transition-all duration-500 backdrop-blur-md ${!isMounted
                     ? 'bg-white/10 hover:bg-white/20'
                     : lightLevel === 'bright'
                       ? 'bg-gray-900/80 border border-gray-700/80 hover:bg-gray-800/90'
@@ -184,7 +194,7 @@ export default function Home() {
               )}
               <button
                 onClick={() => setIsSettingsOpen(true)}
-                className={`p-2 rounded-full backdrop-blur-xl transition-all duration-500 ${!isMounted
+                className={`p-2 rounded-full backdrop-blur-md transition-all duration-500 ${!isMounted
                   ? 'bg-white/10 hover:bg-white/20'
                   : lightLevel === 'bright'
                     ? 'bg-gray-900/80 border border-gray-700/80 hover:bg-gray-800/90'
@@ -194,11 +204,17 @@ export default function Home() {
                   }`}
                 aria-label="Open Settings"
               >
-                <span className="text-xl">⚙️</span>
+                <motion.div
+                  whileHover={{ rotate: 90, scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                >
+                  <Settings className="w-5 h-5" />
+                </motion.div>
               </button>
               <button
                 onClick={toggleLightMode}
-                className={`p-2 rounded-full backdrop-blur-xl transition-all duration-500 ${!isMounted
+                className={`p-2 rounded-full backdrop-blur-md transition-all duration-500 ${!isMounted
                   ? 'bg-white/10 hover:bg-white/20'
                   : lightLevel === 'bright'
                     ? 'bg-gray-900/80 border border-gray-700/80 hover:bg-gray-800/90'
@@ -209,15 +225,20 @@ export default function Home() {
                 aria-label="Toggle Light Mode"
                 title={isManualMode ? `Manual: ${lightLevel}` : `Auto: ${lightLevel}`}
               >
-                <span className="text-xl">
-                  {lightLevel === 'bright' ? '☀️' : lightLevel === 'dark' ? '🌙' : '💡'}
-                </span>
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                >
+                  {lightLevel === 'bright' ? <Sun className="w-5 h-5" /> : lightLevel === 'dark' ? <Moon className="w-5 h-5" /> : <Lightbulb className="w-5 h-5" />}
+                </motion.div>
               </button>
             </div>
 
             {/* Style Widgets */}
             <HairStyleWidget videoRef={videoRef} />
             <BeardStyleWidget videoRef={videoRef} />
+            <ShoppingWidget videoRef={videoRef} />
           </div>
         </motion.header>
 
@@ -239,7 +260,14 @@ export default function Home() {
             </div>
             {/* Pulse effect when listening */}
             {isAriaListening && (
-              <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-xl animate-pulse -z-10" />
+              <div className={`absolute inset-0 rounded-full blur-xl animate-pulse -z-10 transition-all duration-500 ${!isMounted
+                ? 'bg-white/20'
+                : lightLevel === 'bright'
+                  ? 'bg-gray-700/30'
+                  : lightLevel === 'normal'
+                    ? 'bg-white/20'
+                    : 'bg-white/20'
+                }`} />
             )}
           </button>
 
@@ -278,14 +306,14 @@ export default function Home() {
         onResolutionChange={setSelectedResolution}
       />
       {
-        selectedClothingItem && (
-          <ClothingDetailPanel
-            item={selectedClothingItem}
-            onClose={handleCloseDetail}
-            onTryOn={handleTryOn}
-          />
-        )
-      }
+    selectedClothingItem && (
+      <ClothingDetailPanel
+        item={selectedClothingItem}
+        onClose={handleCloseDetail}
+        onTryOn={handleTryOn}
+      />
+    )
+  }
     </main >
   );
 }

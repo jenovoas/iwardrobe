@@ -96,9 +96,9 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({ videoRef }) => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 }}
             suppressHydrationWarning
-            className={`flex items-center gap-3 mt-6 p-3 rounded-xl border transition-all duration-500 backdrop-blur-xl w-full max-w-[220px] ${!isLightMounted
-                    ? 'bg-white/10 border-white/10'
-                    : `${colorScheme.categoryBg} ${colorScheme.categoryBorder}`
+            className={`flex items-center gap-3 mt-6 p-3 rounded-xl border transition-all duration-500 backdrop-blur-md w-full max-w-[220px] ${!isLightMounted
+                ? 'bg-white/10 border-white/10'
+                : `${colorScheme.categoryBg} ${colorScheme.categoryBorder}`
                 }`}
         >
             <span className="text-4xl filter drop-shadow-lg">{weather.icon}</span>
