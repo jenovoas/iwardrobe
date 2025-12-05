@@ -14,6 +14,7 @@ import ClothingDetailPanel from "@/components/widgets/ClothingDetailPanel";
 import { useSmartMirror } from "@/hooks/useSmartMirror";
 import { ClothingItem } from "@/data/clothingData";
 import { motion } from "framer-motion";
+import { useAmbientLight } from "@/hooks/useAmbientLight";
 
 export default function Home() {
   const {
@@ -42,6 +43,9 @@ export default function Home() {
   const [isAriaListening, setIsAriaListening] = React.useState(false);
   const [isTryOnActive, setIsTryOnActive] = React.useState(false);
   const [selectedClothingItem, setSelectedClothingItem] = React.useState<ClothingItem | null>(null);
+
+  // Detect ambient light for adaptive UI colors
+  const { lightLevel, isMounted } = useAmbientLight(videoRef);
 
   // Handle item selection and try-on
   const handleItemSelect = (item: ClothingItem) => {
@@ -94,12 +98,13 @@ export default function Home() {
           <div className="flex flex-col">
             <h1 className="text-4xl font-light tracking-widest" aria-label="iWARDROBE Application">iWARDROBE</h1>
             <span className="text-sm opacity-70">Smart Mirror OS v3.0</span>
-            <WeatherWidget />
+            <WeatherWidget videoRef={videoRef} />
             <WardrobeWidgets
               handPosition={handPosition}
               isPointing={isPointing}
               onItemSelect={handleItemSelect}
               swipeDirection={swipeDirection}
+              videoRef={videoRef}
             />
             {gesture && (
               <motion.div
@@ -126,7 +131,14 @@ export default function Home() {
               ) : (
                 <button
                   onClick={() => setIsLoginOpen(true)}
-                  className="px-4 py-1 bg-white/10 rounded-full text-sm hover:bg-white/20 transition-all"
+                  className={`px-4 py-1 rounded-full text-sm transition-all duration-500 ${!isMounted
+                    ? 'bg-white/10 hover:bg-white/20'
+                    : lightLevel === 'bright'
+                      ? 'bg-gray-900/80 border border-gray-700/80 hover:bg-gray-800/90'
+                      : lightLevel === 'normal'
+                        ? 'bg-white/10 hover:bg-white/20'
+                        : 'bg-white/10 hover:bg-white/20'
+                    }`}
                   aria-label="Login to your account"
                 >
                   Login
@@ -134,7 +146,14 @@ export default function Home() {
               )}
               <button
                 onClick={() => setIsSettingsOpen(true)}
-                className="p-2 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 transition-all"
+                className={`p-2 rounded-full backdrop-blur-md transition-all duration-500 ${!isMounted
+                  ? 'bg-white/10 hover:bg-white/20'
+                  : lightLevel === 'bright'
+                    ? 'bg-gray-900/80 border border-gray-700/80 hover:bg-gray-800/90'
+                    : lightLevel === 'normal'
+                      ? 'bg-white/10 hover:bg-white/20'
+                      : 'bg-white/10 hover:bg-white/20'
+                  }`}
                 aria-label="Open Settings"
               >
                 <span className="text-xl">⚙️</span>

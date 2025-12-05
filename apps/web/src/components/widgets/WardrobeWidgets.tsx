@@ -4,23 +4,29 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clothingData, ClothingCategory, ClothingItem } from '@/data/clothingData';
 import { HandPosition } from '@/hooks/useHandGestures';
+import { useAmbientLight } from '@/hooks/useAmbientLight';
 
 interface WardrobeWidgetsProps {
     handPosition?: HandPosition | null;
     isPointing?: boolean;
     onItemSelect?: (item: ClothingItem) => void;
     swipeDirection?: "left" | "right" | null;
+    videoRef?: React.RefObject<HTMLVideoElement | null>;
 }
 
 const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
     handPosition,
     isPointing,
     onItemSelect,
-    swipeDirection
+    swipeDirection,
+    videoRef
 }) => {
     const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(0);
     const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
     const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
+
+    // Detect ambient light and get adaptive color scheme
+    const { lightLevel, colorScheme, isMounted } = useAmbientLight(videoRef);
 
     // Handle swipe navigation between categories
     useEffect(() => {
@@ -102,19 +108,23 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
                             onClick={() => handleCategoryClick(category)}
                             className={`
                                 flex items-center justify-between p-3 rounded-lg border 
-                                transition-all cursor-pointer group relative
-                                ${isSelected
-                                    ? 'bg-blue-500/30 border-blue-400/50 shadow-lg shadow-blue-500/20'
-                                    : 'bg-white/5 border-white/5 hover:bg-white/10'
+                                transition-all duration-500 cursor-pointer group relative
+                                ${!isMounted
+                                    ? isSelected
+                                        ? 'bg-blue-500/30 border-blue-400/50 shadow-lg shadow-blue-500/20'
+                                        : 'bg-white/5 border-white/5 hover:bg-white/10'
+                                    : isSelected
+                                        ? `${colorScheme.categorySelectedBg} ${colorScheme.categorySelectedBorder} shadow-lg shadow-blue-500/20`
+                                        : `${colorScheme.categoryBg} ${colorScheme.categoryBorder} ${colorScheme.categoryBgHover}`
                                 }
-                                ${isExpanded ? 'bg-white/15' : ''}
+                                ${isExpanded ? (isMounted ? colorScheme.categoryExpandedBg : 'bg-white/15') : ''}
                             `}
                         >
                             {/* Selection indicator */}
                             {isSelected && (
                                 <motion.div
                                     layoutId="category-selector"
-                                    className="absolute left-0 top-0 bottom-0 w-1 bg-blue-400 rounded-l-lg"
+                                    className={`absolute left-0 top-0 bottom-0 w-1 ${isMounted ? colorScheme.accentColor : 'bg-blue-400'} rounded-l-lg`}
                                     initial={false}
                                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                 />
@@ -124,12 +134,12 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
                                 <span className={`text-2xl transition-transform ${isSelected ? 'scale-125' : 'group-hover:scale-110'}`}>
                                     {category.icon}
                                 </span>
-                                <span className={`text-sm font-light ${isSelected ? 'font-medium' : 'opacity-80'}`}>
+                                <span className={`text-sm font-light ${isSelected ? 'font-medium' : (isMounted ? colorScheme.textOpacity : 'opacity-80')}`}>
                                     {category.name}
                                 </span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="text-xs font-bold opacity-60 bg-white/10 px-2 py-0.5 rounded-full">
+                                <span className={`text-xs font-bold opacity-60 ${isMounted ? colorScheme.indicatorBg : 'bg-white/10'} px-2 py-0.5 rounded-full`}>
                                     {category.items.length}
                                 </span>
                                 <motion.span
@@ -164,16 +174,20 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
                                                     onClick={() => handleItemClick(item)}
                                                     className={`
                                                         flex items-center justify-between p-2 rounded-md
-                                                        transition-all cursor-pointer
-                                                        ${isHovered
-                                                            ? 'bg-blue-500/20 border border-blue-400/30'
-                                                            : 'bg-white/5 hover:bg-white/10'
+                                                        transition-all duration-500 cursor-pointer
+                                                        ${!isMounted
+                                                            ? isHovered
+                                                                ? 'bg-blue-500/20 border border-blue-400/30'
+                                                                : 'bg-white/5 hover:bg-white/10'
+                                                            : isHovered
+                                                                ? `${colorScheme.itemHoveredBg} border ${colorScheme.itemHoveredBorder}`
+                                                                : `${colorScheme.itemBg} ${colorScheme.itemBgHover}`
                                                         }
                                                     `}
                                                 >
                                                     <div className="flex items-center gap-2">
-                                                        <div className={`w-2 h-2 rounded-full ${isHovered ? 'bg-blue-400' : 'bg-white/20'}`} />
-                                                        <span className="text-xs opacity-80">{item.name}</span>
+                                                        <div className={`w-2 h-2 rounded-full transition-colors duration-500 ${isHovered ? (isMounted ? colorScheme.accentColor : 'bg-blue-400') : 'bg-white/20'}`} />
+                                                        <span className={`text-xs ${isMounted ? colorScheme.textOpacity : 'opacity-80'}`}>{item.name}</span>
                                                     </div>
                                                     <span className="text-[10px] opacity-50">{item.color}</span>
                                                 </motion.div>
@@ -198,8 +212,27 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
                     👆 Apunta para seleccionar
                 </motion.div>
             )}
+
+            {/* Light Mode Indicator */}
+            {isMounted && (
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 }}
+                    className={`mt-2 p-2 rounded-lg text-xs text-center transition-all duration-500 ${lightLevel === 'dark'
+                        ? 'bg-gray-800/60 border border-gray-600/40'
+                        : lightLevel === 'bright'
+                            ? 'bg-yellow-500/30 border border-yellow-400/50'
+                            : 'bg-blue-500/20 border border-blue-400/30'
+                        }`}
+                >
+                    {lightLevel === 'dark' && '🌙 Modo Oscuro'}
+                    {lightLevel === 'normal' && '💡 Modo Normal'}
+                    {lightLevel === 'bright' && '☀️ Modo Brillante'}
+                </motion.div>
+            )}
         </div>
     );
-};
+}
 
 export default WardrobeWidgets;

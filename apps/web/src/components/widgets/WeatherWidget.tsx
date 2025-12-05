@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useAmbientLight } from '@/hooks/useAmbientLight';
 
 interface WeatherData {
     location: string;
@@ -10,7 +11,11 @@ interface WeatherData {
     icon: string;
 }
 
-const WeatherWidget = () => {
+interface WeatherWidgetProps {
+    videoRef?: React.RefObject<HTMLVideoElement | null>;
+}
+
+const WeatherWidget: React.FC<WeatherWidgetProps> = ({ videoRef }) => {
     const [weather, setWeather] = useState<WeatherData>({
         location: "Detectando...",
         temp: 0,
@@ -19,6 +24,9 @@ const WeatherWidget = () => {
         low: 0,
         icon: "..."
     });
+
+    // Detect ambient light and get adaptive color scheme
+    const { lightLevel, isMounted } = useAmbientLight(videoRef);
 
     useEffect(() => {
         if ("geolocation" in navigator) {
@@ -78,14 +86,24 @@ const WeatherWidget = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 }}
-            className="flex items-center gap-3 mt-6 bg-white/5 backdrop-blur-sm p-3 rounded-xl border border-white/10"
+            className={`flex items-center gap-3 mt-6 p-3 rounded-xl border transition-all duration-500 ${!isMounted
+                ? 'bg-white/10 border-white/10 backdrop-blur-sm'
+                : lightLevel === 'bright'
+                    ? 'bg-gray-900/80 border-gray-700/80 backdrop-blur-md'
+                    : lightLevel === 'normal'
+                        ? 'bg-white/10 border-white/10 backdrop-blur-sm'
+                        : 'bg-white/5 border-white/5 backdrop-blur-sm'
+                }`}
         >
             <span className="text-4xl filter drop-shadow-lg">{weather.icon}</span>
             <div className="flex flex-col">
-                <div className="text-sm font-medium opacity-90">{weather.location}</div>
+                <div className={`text-sm font-medium transition-opacity duration-500 ${!isMounted ? 'opacity-90' : lightLevel === 'bright' ? 'opacity-100' : 'opacity-90'
+                    }`}>{weather.location}</div>
                 <div className="text-3xl font-light leading-none">{weather.temp}°</div>
-                <div className="text-xs font-medium opacity-80 mt-1">{weather.condition}</div>
-                <div className="text-[10px] opacity-60 mt-0.5">H: {weather.high}° L: {weather.low}°</div>
+                <div className={`text-xs font-medium mt-1 transition-opacity duration-500 ${!isMounted ? 'opacity-80' : lightLevel === 'bright' ? 'opacity-95' : 'opacity-80'
+                    }`}>{weather.condition}</div>
+                <div className={`text-[10px] mt-0.5 transition-opacity duration-500 ${!isMounted ? 'opacity-60' : lightLevel === 'bright' ? 'opacity-80' : 'opacity-60'
+                    }`}>H: {weather.high}° L: {weather.low}°</div>
             </div>
         </motion.div>
     );
