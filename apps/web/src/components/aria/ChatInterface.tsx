@@ -61,40 +61,59 @@ interface ChatInterfaceProps {
 const ChatInterface = ({ isListening, onToggleListening }: ChatInterfaceProps) => {
     const speak = (text: string) => {
         if ("speechSynthesis" in window) {
+            // Cancel any current speaking
+            window.speechSynthesis.cancel();
+
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = "es-ES"; // Spanish
-            utterance.pitch = 1.1; // Slightly higher pitch for more feminine sound
+            utterance.lang = "es-ES"; // Default to Spain Spanish
 
             const voices = window.speechSynthesis.getVoices();
-            // Filter for Spanish voices
-            const spanishVoices = voices.filter(v => v.lang.includes("es"));
 
-            // Try to find a female voice by name (common names in OS/Browsers)
-            // Prioritize female voices
-            const femaleVoice = spanishVoices.find(v =>
-                v.name.includes("female") ||
-                v.name.includes("Female") ||
-                v.name.includes("woman") ||
-                v.name.includes("Woman") ||
-                v.name.includes("Monica") ||
-                v.name.includes("Mónica") ||
-                v.name.includes("Paulina") ||
-                v.name.includes("Rosa") ||
-                v.name.includes("Helena") ||
-                v.name.includes("Sabina") ||
-                v.name.includes("Laura") ||
-                v.name.includes("Lucia") ||
-                v.name.includes("Lucía") ||
-                v.name.includes("Carmen") ||
-                v.name.includes("Google Español") ||
-                v.name.includes("Microsoft Laura")
+            // Filter for all Spanish voices (Spain, Mexico, US, etc.)
+            const spanishVoices = voices.filter(v =>
+                v.lang.toLowerCase().includes("es") ||
+                v.lang.toLowerCase().includes("spa")
             );
 
-            // Fallback to any Spanish voice if no specific female voice is found
-            if (femaleVoice) {
-                utterance.voice = femaleVoice;
-            } else if (spanishVoices.length > 0) {
-                utterance.voice = spanishVoices[0];
+            // Detailed logging for debugging (will help user identify available voices)
+            console.log("All available voices:", voices.map(v => `${v.name} (${v.lang})`));
+            console.log("Spanish voices found:", spanishVoices.map(v => `${v.name} (${v.lang})`));
+
+            // Expanded list of female keywords and specific voice names
+            const femaleKeywords = [
+                "female", "woman", "femenina", "mujer", "girl", "chica",
+                "monica", "mónica", "paulina", "rosa", "helena", "sabina",
+                "laura", "lucia", "lucía", "carmen", "elena", "sofia", "sofía",
+                "zira", "yuri", "mia", "alva", "samantha"
+            ];
+
+            // Try to find a specific high-quality female Spanish voice
+            let selectedVoice = spanishVoices.find(v => {
+                const nameLower = v.name.toLowerCase();
+                return femaleKeywords.some(keyword => nameLower.includes(keyword));
+            });
+
+            // If no specific female Spanish voice is found, try Google Español (often female-sounding)
+            if (!selectedVoice) {
+                selectedVoice = spanishVoices.find(v => v.name.includes("Google Español") || v.name.includes("Google español"));
+            }
+
+            // Fallback: Use the first Spanish voice available
+            if (!selectedVoice && spanishVoices.length > 0) {
+                selectedVoice = spanishVoices[0];
+            }
+
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+                console.log("Selected voice:", selectedVoice.name);
+
+                // Adjust pitch slightly higher if it's not a known high-quality female voice
+                // to try and feminize it, unless it's known to be good.
+                const isKnownFemale = femaleKeywords.some(k => selectedVoice!.name.toLowerCase().includes(k));
+                utterance.pitch = isKnownFemale ? 1.0 : 1.1;
+            } else {
+                // Fallback if no Spanish voices found at all (rare)
+                utterance.pitch = 1.2; // Try to make default voice sound more feminine
             }
 
             window.speechSynthesis.speak(utterance);

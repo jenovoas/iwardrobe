@@ -10,7 +10,11 @@ interface CameraFeedProps {
 
 const CameraFeed = forwardRef<Webcam, CameraFeedProps>((props, ref) => {
     const { deviceId, resolution = "auto" } = props;
-    const [isClient] = useState(() => typeof window !== "undefined");
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
     const [error, setError] = useState<string | null>(null);
     const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
     const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);

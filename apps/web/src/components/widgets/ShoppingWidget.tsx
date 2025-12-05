@@ -6,18 +6,29 @@ import { ShoppingBag, Search, TrendingUp, Wrench } from 'lucide-react';
 interface ShoppingOption {
     id: string;
     name: string;
-    icon: React.ReactNode;
+    icon: string;
     action: () => void;
 }
 
 interface ShoppingWidgetProps {
     videoRef?: React.RefObject<HTMLVideoElement | null>;
+    isFocused?: boolean;
+    swipeDirection?: "left" | "right" | "up" | "down" | null;
 }
 
-const ShoppingWidget: React.FC<ShoppingWidgetProps> = ({ videoRef }) => {
+const ShoppingWidget: React.FC<ShoppingWidgetProps> = ({ videoRef, isFocused = false, swipeDirection }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const { lightLevel, colorScheme, isMounted } = useAmbientLight(videoRef);
+
+    React.useEffect(() => {
+        if (!isFocused) return;
+        if (swipeDirection === "right") {
+            setIsExpanded(true);
+        } else if (swipeDirection === "left") {
+            setIsExpanded(false);
+        }
+    }, [swipeDirection, isFocused]);
 
     const handleSearchValue = () => {
         setSelectedOption('search');
@@ -56,9 +67,9 @@ const ShoppingWidget: React.FC<ShoppingWidgetProps> = ({ videoRef }) => {
     };
 
     const shoppingOptions: ShoppingOption[] = [
-        { id: 'search', name: 'Buscar valor', icon: <Search className="w-5 h-5" />, action: handleSearchValue },
-        { id: 'compare', name: 'Comparar precios', icon: <TrendingUp className="w-5 h-5" />, action: handleComparePrice },
-        { id: 'repair', name: 'Reparar prenda', icon: <Wrench className="w-5 h-5" />, action: handleRepair },
+        { id: 'search', name: 'Buscar valor', icon: '🔍', action: handleSearchValue },
+        { id: 'compare', name: 'Comparar precios', icon: '⚖️', action: handleComparePrice },
+        { id: 'repair', name: 'Reparar prenda', icon: '🧵', action: handleRepair },
     ];
 
     return (
@@ -66,7 +77,7 @@ const ShoppingWidget: React.FC<ShoppingWidgetProps> = ({ videoRef }) => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.8 }}
-            className="w-full max-w-[220px] mt-2"
+            className={`w-full max-w-[220px] mt-2 transition-all duration-300 ${isFocused ? 'scale-105 ring-2 ring-white/30 rounded-xl p-2 bg-white/5' : 'opacity-80'}`}
         >
             <motion.div
                 onClick={() => setIsExpanded(!isExpanded)}
@@ -89,7 +100,7 @@ const ShoppingWidget: React.FC<ShoppingWidgetProps> = ({ videoRef }) => {
                         whileTap={{ scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     >
-                        <ShoppingBag className={`w-6 h-6 transition-transform ${isExpanded ? 'scale-110' : 'group-hover:scale-105'}`} />
+                        <span className={`text-2xl transition-transform block ${isExpanded ? 'scale-110' : 'group-hover:scale-105'}`}>🛍️</span>
                     </motion.div>
                     <span className={`text-sm font-light ${isExpanded ? 'font-medium' : (isMounted ? colorScheme.textOpacity : 'opacity-80')}`}>
                         Comprar
@@ -153,6 +164,7 @@ const ShoppingWidget: React.FC<ShoppingWidgetProps> = ({ videoRef }) => {
                                         <motion.div
                                             whileHover={{ scale: 1.2, rotate: 10 }}
                                             transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                                            className="text-xl"
                                         >
                                             {option.icon}
                                         </motion.div>

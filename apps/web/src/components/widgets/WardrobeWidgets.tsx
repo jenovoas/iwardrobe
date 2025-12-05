@@ -10,8 +10,9 @@ interface WardrobeWidgetsProps {
     handPosition?: HandPosition | null;
     isPointing?: boolean;
     onItemSelect?: (item: ClothingItem) => void;
-    swipeDirection?: "left" | "right" | null;
+    swipeDirection?: "left" | "right" | "up" | "down" | null;
     videoRef?: React.RefObject<HTMLVideoElement | null>;
+    isFocused?: boolean;
 }
 
 const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
@@ -19,7 +20,8 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
     isPointing,
     onItemSelect,
     swipeDirection,
-    videoRef
+    videoRef,
+    isFocused = false
 }) => {
     const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(0);
     const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
@@ -94,7 +96,7 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
     };
 
     return (
-        <div className="mt-4 space-y-2 w-full max-w-[220px]">
+        <div className={`mt-4 space-y-2 w-full max-w-[220px] transition-all duration-300 ${isFocused ? 'scale-105 ring-2 ring-white/30 rounded-xl p-2 bg-white/5' : 'opacity-80'}`}>
             {clothingData.map((category, index) => {
                 const isSelected = index === selectedCategoryIndex;
                 const isExpanded = expandedCategory === category.name;

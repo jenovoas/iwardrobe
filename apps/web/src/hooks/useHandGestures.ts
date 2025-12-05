@@ -12,15 +12,16 @@ export interface HandPosition {
     y: number; // 0-1 normalized
 }
 
-export const useHandGestures = (videoRef: React.RefObject<HTMLVideoElement | null>) => {
+import Webcam from "react-webcam";
+export const useHandGestures = (videoRef: React.RefObject<HTMLVideoElement | null> | React.RefObject<Webcam | null>) => {
     const [gestureRecognizer, setGestureRecognizer] = useState<GestureRecognizer | null>(null);
     const [gesture, setGesture] = useState<string | null>(null);
-    const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
+    const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | "up" | "down" | null>(null);
     const [handPosition, setHandPosition] = useState<HandPosition | null>(null);
     const [isPointing, setIsPointing] = useState(false);
     const requestRef = useRef<number>(0);
-    const lastXRef = useRef<number | null>(null);
-    const lastTimeRef = useRef<number>(0);
+    const swipeStartPosRef = useRef<HandPosition | null>(null);
+    const lastGestureRef = useRef<string | null>(null);
     const gestureCooldownRef = useRef<number>(0);
     const lastTimestampRef = useRef<number>(0);
 
@@ -43,6 +44,7 @@ export const useHandGestures = (videoRef: React.RefObject<HTMLVideoElement | nul
                             delegate: "GPU",
                         },
                         runningMode: "VIDEO",
+                        numHands: 1, // Added numHands: 1 as per the provided snippet
                     });
                 } catch (gpuError) {
                     console.warn("GPU delegate failed, falling back to CPU:", gpuError);
@@ -54,15 +56,17 @@ export const useHandGestures = (videoRef: React.RefObject<HTMLVideoElement | nul
                             delegate: "CPU",
                         },
                         runningMode: "VIDEO",
+                        numHands: 1, // Added numHands: 1 as per the provided snippet
                     });
                 }
 
                 if (recognizer) {
                     console.log(`Gesture recognizer initialized with ${delegate} delegate`);
                     setGestureRecognizer(recognizer);
+                    console.log("Gesture Recognizer Loaded Successfully!");
                 }
             } catch (error) {
-                console.error("Failed to create gesture recognizer:", error);
+                console.error("Error initializing gesture recognizer:", error);
             }
         };
 
@@ -70,85 +74,135 @@ export const useHandGestures = (videoRef: React.RefObject<HTMLVideoElement | nul
     }, []);
 
     useEffect(() => {
-        if (!gestureRecognizer || !videoRef.current) return;
+        if (!gestureRecognizer) return;
 
         const detect = () => {
-            if (videoRef.current && videoRef.current.readyState === 4) {
+            const videoEl = (videoRef.current instanceof HTMLVideoElement)
+                ? videoRef.current
+                : (videoRef.current as any)?.video;
+
+            // Debug video state
+            if (!videoEl) {
+                // console.log("Detection Loop: Video Element is null");
+            } else if (videoEl.readyState !== 4) {
+                // console.log("Detection Loop: Video not ready", videoEl.readyState);
+            }
+
+            if (videoEl && videoEl.readyState === 4) {
                 // Use performance.now() for monotonically increasing timestamps
                 const currentTimestamp = performance.now();
 
-                // Ensure timestamp is always increasing
-                if (currentTimestamp <= lastTimestampRef.current) {
+                // Throttle detection to ~30 FPS (every 30ms) for smoother tracking
+                if (currentTimestamp - lastTimestampRef.current < 30) {
                     requestRef.current = requestAnimationFrame(detect);
                     return;
                 }
 
-                const results: GestureRecognizerResult = gestureRecognizer.recognizeForVideo(
-                    videoRef.current,
-                    currentTimestamp
-                );
                 lastTimestampRef.current = currentTimestamp;
 
-                const currentTime = Date.now();
+                try {
+                    const results: GestureRecognizerResult = gestureRecognizer.recognizeForVideo(
+                        videoEl,
+                        currentTimestamp
+                    );
 
-                if (results.gestures.length > 0 && results.landmarks && results.landmarks.length > 0) {
-                    const topGesture = results.gestures[0][0];
-                    const handLandmarks = results.landmarks[0];
+                    const currentTime = Date.now();
 
-                    // Track index finger tip position (landmark 8)
-                    const indexFingerTip = handLandmarks[8];
-                    setHandPosition({ x: indexFingerTip.x, y: indexFingerTip.y });
+                    if (results.gestures.length > 0) {
+                        // Log detection for debugging
+                        // console.log("Gesture detected:", results.gestures[0][0].categoryName);
+                    }
 
-                    if (topGesture && topGesture.score > 0.5) {
-                        setGesture(topGesture.categoryName);
+                    if (results.gestures.length > 0 && results.landmarks && results.landmarks.length > 0) {
+                        const topGesture = results.gestures[0][0];
+                        const handLandmarks = results.landmarks[0];
 
-                        // Detect Pointing Gesture (index finger extended)
-                        if (topGesture.categoryName === "Pointing_Up") {
-                            setIsPointing(true);
-                        } else {
-                            setIsPointing(false);
-                        }
+                        // Track index finger tip position (landmark 8)
+                        const indexFingerTip = handLandmarks[8];
+                        setHandPosition({ x: indexFingerTip.x, y: indexFingerTip.y });
 
-                        // Swipe Detection Logic
-                        if (topGesture.categoryName === "Open_Palm" && currentTime > gestureCooldownRef.current) {
-                            const wrist = handLandmarks[0]; // Wrist landmark
-                            const currentX = wrist.x;
+                        if (topGesture && topGesture.score > 0.5) {
+                            setGesture(topGesture.categoryName);
 
-                            if (lastXRef.current !== null) {
-                                const deltaX = currentX - lastXRef.current;
-                                const deltaTime = currentTime - lastTimeRef.current;
-                                const velocity = deltaX / deltaTime; // Units per ms
+                            // Detect Pointing Gesture (index finger extended)
+                            if (topGesture.categoryName === "Pointing_Up") {
+                                setIsPointing(true);
+                            } else {
+                                setIsPointing(false);
+                            }
 
-                                // Thresholds for swipe detection
-                                if (Math.abs(deltaX) > 0.15 && deltaTime < 300) {
-                                    if (deltaX < -0.15) {
-                                        setSwipeDirection("left");
-                                        gestureCooldownRef.current = currentTime + 1000; // 1s cooldown
+                            // Swipe Detection Logic (Accumulated Displacement)
+                            if (topGesture.categoryName === "Pointing_Up" && currentTime > gestureCooldownRef.current) {
+                                const indexTip = handLandmarks[8]; // Index finger tip
+                                const currentX = indexTip.x;
+                                const currentY = indexTip.y;
+
+                                // Initialize start position if new gesture or just started
+                                if (!swipeStartPosRef.current || lastGestureRef.current !== "Pointing_Up") {
+                                    swipeStartPosRef.current = { x: currentX, y: currentY };
+                                }
+
+                                if (swipeStartPosRef.current) {
+                                    const deltaX = currentX - swipeStartPosRef.current.x;
+                                    const deltaY = currentY - swipeStartPosRef.current.y;
+
+                                    // Thresholds (Displacement based)
+                                    // 0.10 means moving 10% of the screen width/height
+                                    const SWIPE_THRESHOLD = 0.10;
+
+                                    // Horizontal Swipe
+                                    if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY)) {
+                                        if (deltaX < -SWIPE_THRESHOLD) {
+                                            setSwipeDirection("left");
+                                            console.log("Swipe Left Detected");
+                                        } else if (deltaX > SWIPE_THRESHOLD) {
+                                            setSwipeDirection("right");
+                                            console.log("Swipe Right Detected");
+                                        }
+                                        gestureCooldownRef.current = currentTime + 400; // Cooldown after successful swipe
+                                        swipeStartPosRef.current = null; // Reset start position
                                         setTimeout(() => setSwipeDirection(null), 1000);
-                                    } else if (deltaX > 0.15) {
-                                        setSwipeDirection("right");
-                                        gestureCooldownRef.current = currentTime + 1000;
+                                    }
+                                    // Vertical Swipe
+                                    else if (Math.abs(deltaY) > SWIPE_THRESHOLD && Math.abs(deltaY) > Math.abs(deltaX)) {
+                                        if (deltaY < -SWIPE_THRESHOLD) {
+                                            setSwipeDirection("up");
+                                            console.log("Swipe Up Detected");
+                                        } else if (deltaY > SWIPE_THRESHOLD) {
+                                            setSwipeDirection("down");
+                                            console.log("Swipe Down Detected");
+                                        }
+                                        gestureCooldownRef.current = currentTime + 400;
+                                        swipeStartPosRef.current = null;
                                         setTimeout(() => setSwipeDirection(null), 1000);
                                     }
                                 }
+                            } else {
+                                // Reset if not Pointing_Up
+                                if (topGesture.categoryName !== "Pointing_Up") {
+                                    swipeStartPosRef.current = null;
+                                }
                             }
 
-                            lastXRef.current = currentX;
-                            lastTimeRef.current = currentTime;
+                            lastGestureRef.current = topGesture.categoryName;
                         } else {
-                            lastXRef.current = null;
+                            setGesture(null);
+                            setIsPointing(false);
+                            swipeStartPosRef.current = null;
+                            lastGestureRef.current = null;
                         }
                     } else {
                         setGesture(null);
+                        setHandPosition(null);
                         setIsPointing(false);
-                        lastXRef.current = null;
+                        swipeStartPosRef.current = null;
+                        lastGestureRef.current = null;
                     }
-                } else {
-                    setGesture(null);
-                    setHandPosition(null);
-                    setIsPointing(false);
-                    lastXRef.current = null;
+                } catch (error) {
+                    console.error("Error recognizing gestures:", error);
                 }
+            } else {
+                //  console.log("Waiting for video ready...", videoRef.current?.readyState);
             }
             requestRef.current = requestAnimationFrame(detect);
         };
@@ -162,5 +216,5 @@ export const useHandGestures = (videoRef: React.RefObject<HTMLVideoElement | nul
         };
     }, [gestureRecognizer, videoRef]);
 
-    return { gesture, swipeDirection, handPosition, isPointing };
+    return { gesture, swipeDirection, handPosition, isPointing, isModelLoading: !gestureRecognizer };
 };

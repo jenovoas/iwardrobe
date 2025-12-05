@@ -41,11 +41,49 @@ export default function Home() {
     swipeDirection,
     handPosition,
     isPointing,
+    isModelLoading,
   } = useSmartMirror();
 
   const [isAriaListening, setIsAriaListening] = React.useState(false);
   const [isTryOnActive, setIsTryOnActive] = React.useState(false);
   const [selectedClothingItem, setSelectedClothingItem] = React.useState<ClothingItem | null>(null);
+
+  // Widget Navigation State
+  const [activeView, setActiveView] = React.useState<'menu' | 'wardrobe' | 'hair' | 'beard' | 'shopping'>('menu');
+  const [focusedWidgetIndex, setFocusedWidgetIndex] = React.useState(0);
+  const WIDGET_LABELS = ['Wardrobe', 'Hair Style', 'Beard Style', 'Shopping'];
+  const WIDGET_ICONS = ['👕', '💇‍♂️', '🧔', '🛍️'];
+  const WIDGET_COUNT = WIDGET_LABELS.length;
+
+  // Handle Swipes for Navigation
+  React.useEffect(() => {
+    if (!swipeDirection) return;
+
+    if (activeView === 'menu') {
+      if (swipeDirection === "up") {
+        setFocusedWidgetIndex((prev) => (prev > 0 ? prev - 1 : WIDGET_COUNT - 1));
+      } else if (swipeDirection === "down") {
+        setFocusedWidgetIndex((prev) => (prev < WIDGET_COUNT - 1 ? prev + 1 : 0));
+      } else if (swipeDirection === "right") {
+        // Select logic
+        const views: ('wardrobe' | 'hair' | 'beard' | 'shopping')[] = ['wardrobe', 'hair', 'beard', 'shopping'];
+        setActiveView(views[focusedWidgetIndex]);
+      }
+    }
+  }, [swipeDirection, activeView, focusedWidgetIndex]);
+
+  // Handle Back Navigation with Gesture
+  React.useEffect(() => {
+    if (activeView !== 'menu' && gesture === 'Closed_Fist') {
+      setActiveView('menu');
+    }
+
+    // Alternative Selection with Thumb_Up
+    if (activeView === 'menu' && gesture === 'Thumb_Up') {
+      const views: ('wardrobe' | 'hair' | 'beard' | 'shopping')[] = ['wardrobe', 'hair', 'beard', 'shopping'];
+      setActiveView(views[focusedWidgetIndex]);
+    }
+  }, [gesture, activeView, focusedWidgetIndex]);
 
   // Client-side time and date to prevent hydration mismatch
   const [currentTime, setCurrentTime] = React.useState<string>("");
@@ -124,25 +162,82 @@ export default function Home() {
       <VirtualTryOn videoRef={videoRef} isActive={isTryOnActive} />
       <OverlayLayer>
         {/* Top Bar */}
+        {gesture && (
+          <div className="absolute top-4 right-1/2 translate-x-1/2 px-4 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/80 text-sm z-50 flex items-center gap-2">
+            <span>🤚 {gesture}</span>
+            {swipeDirection && <span className="font-bold text-green-400">→ {swipeDirection.toUpperCase()}</span>}
+            {activeView === 'menu' && <span className="text-white ml-2 text-xs">(Select: 👍 Thumb Up / 👉 Right)</span>}
+            {activeView !== 'menu' && <span className="text-white ml-2 text-xs">(Back: ✊ Fist)</span>}
+          </div>
+        )}
+
+        {/* Cursor for Pointing_Up */}
+        {gesture === "Pointing_Up" && handPosition && (
+          <div
+            className="absolute w-8 h-8 border-2 border-white rounded-full bg-white/20 pointer-events-none z-50 transition-all duration-75 ease-out shadow-[0_0_15px_rgba(255,255,255,0.5)]"
+            style={{
+              left: `${(1 - handPosition.x) * 100}%`, // Mirror effect
+              top: `${handPosition.y * 100}%`,
+            }}
+          />
+        )}
+
         <motion.header
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8 }}
-          className="flex justify-between items-start p-8"
+          className="flex justify-between items-start p-8 h-full"
         >
-          <div className="flex flex-col">
-            <div className="p-3 rounded-xl backdrop-blur-md bg-black/10 w-fit">
-              <h1 className="text-4xl font-bold tracking-widest text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]" aria-label="iWARDROBE Application">iWARDROBE</h1>
-              <span className="text-sm opacity-90 text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">Smart Mirror OS v3.0</span>
+          <div className="flex flex-col h-full justify-between">
+            <div className="flex flex-col gap-4">
+              <div className="p-3 rounded-xl backdrop-blur-md bg-black/10 w-fit relative">
+                <h1 className="text-4xl font-bold tracking-widest text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]" aria-label="iWARDROBE Application">iWARDROBE</h1>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm opacity-90 text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">Smart Mirror OS v3.0</span>
+                  {isModelLoading && (
+                    <span className="text-xs text-yellow-400 animate-pulse bg-yellow-400/10 px-2 py-0.5 rounded-full border border-yellow-400/20">
+                      Inicializando IA...
+                    </span>
+                  )}
+                </div>
+              </div>
+              <WeatherWidget videoRef={videoRef} />
             </div>
-            <WeatherWidget videoRef={videoRef} />
-            <WardrobeWidgets
-              handPosition={handPosition}
-              isPointing={isPointing}
-              onItemSelect={handleItemSelect}
-              swipeDirection={swipeDirection}
-              videoRef={videoRef}
-            />
+
+            {/* MAIN CONTENT AREA */}
+            <div className="flex-1 flex items-center ml-8">
+              {activeView === 'menu' && (
+                <div className="flex flex-col gap-4 w-64">
+                  {WIDGET_LABELS.map((label, index) => (
+                    <motion.div
+                      key={label}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{
+                        opacity: 1,
+                        x: 0,
+                        scale: focusedWidgetIndex === index ? 1.05 : 1,
+                        backgroundColor: focusedWidgetIndex === index ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.05)"
+                      }}
+                      className={`p-4 rounded-xl backdrop-blur-md border border-white/10 flex items-center gap-4 transition-all duration-300 ${focusedWidgetIndex === index ? 'ring-2 ring-white/50 shadow-lg' : ''}`}
+                    >
+                      <span className="text-2xl">{WIDGET_ICONS[index]}</span>
+                      <span className={`text-lg font-medium ${focusedWidgetIndex === index ? 'text-white' : 'text-white/70'}`}>{label}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+
+              {activeView === 'wardrobe' && (
+                <WardrobeWidgets
+                  handPosition={handPosition}
+                  isPointing={isPointing}
+                  onItemSelect={handleItemSelect}
+                  swipeDirection={swipeDirection}
+                  videoRef={videoRef}
+                  isFocused={true}
+                />
+              )}
+            </div>
             {gesture && (
               <motion.div
                 initial={{ scale: 0 }}
@@ -160,7 +255,8 @@ export default function Home() {
               </motion.div>
             )}
           </div>
-          <div className="flex flex-col items-end gap-4">
+
+          <div className="flex flex-col items-end gap-4 h-full">
             <div className="text-right">
               <div className="text-6xl font-thin" aria-label="Current Time">
                 {isTimeLoaded ? currentTime : "--:--"}
@@ -236,10 +332,28 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Style Widgets */}
-            <HairStyleWidget videoRef={videoRef} />
-            <BeardStyleWidget videoRef={videoRef} />
-            <ShoppingWidget videoRef={videoRef} />
+            {/* Active Widget View */}
+            {activeView === 'hair' && (
+              <HairStyleWidget
+                videoRef={videoRef}
+                isFocused={true}
+                swipeDirection={swipeDirection}
+              />
+            )}
+            {activeView === 'beard' && (
+              <BeardStyleWidget
+                videoRef={videoRef}
+                isFocused={true}
+                swipeDirection={swipeDirection}
+              />
+            )}
+            {activeView === 'shopping' && (
+              <ShoppingWidget
+                videoRef={videoRef}
+                isFocused={true}
+                swipeDirection={swipeDirection}
+              />
+            )}
           </div>
         </motion.header>
 
@@ -279,20 +393,18 @@ export default function Home() {
           />
         </motion.div>
 
-        {/* Bottom Bar - Split Corners */}
-        <motion.footer
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="absolute bottom-0 left-0 right-0 flex justify-between items-end p-8 pointer-events-none"
-        >
-          {/* Bottom Left: Wardrobe */}
-          <button className="p-4 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 transition-all pointer-events-auto" aria-label="Open Wardrobe">
-            <span className="text-2xl">👕</span>
-          </button>
-
-          {/* Right side is now handled by the Avatar container above */}
-        </motion.footer>
+        {/* Bottom Bar - Back Button Indication */}
+        {activeView !== 'menu' && (
+          <motion.div
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="absolute bottom-8 left-8 pointer-events-none"
+          >
+            <div className="flex items-center gap-2 p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/50">
+              <span>✊ Closed Fist to Go Back</span>
+            </div>
+          </motion.div>
+        )}
       </OverlayLayer>
 
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />

@@ -11,6 +11,8 @@ interface HairStyle {
 
 interface HairStyleWidgetProps {
     videoRef?: React.RefObject<HTMLVideoElement | null>;
+    isFocused?: boolean;
+    swipeDirection?: "left" | "right" | "up" | "down" | null;
 }
 
 const hairStyles: HairStyle[] = [
@@ -19,17 +21,26 @@ const hairStyles: HairStyle[] = [
     { id: '3', name: 'Cabello Largo', icon: '🦱' },
 ];
 
-const HairStyleWidget: React.FC<HairStyleWidgetProps> = ({ videoRef }) => {
+const HairStyleWidget: React.FC<HairStyleWidgetProps> = ({ videoRef, isFocused = false, swipeDirection }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
     const { lightLevel, colorScheme, isMounted } = useAmbientLight(videoRef);
+
+    React.useEffect(() => {
+        if (!isFocused) return;
+        if (swipeDirection === "right") {
+            setIsExpanded(true);
+        } else if (swipeDirection === "left") {
+            setIsExpanded(false);
+        }
+    }, [swipeDirection, isFocused]);
 
     return (
         <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.6 }}
-            className="w-full max-w-[220px] mt-6"
+            className={`w-full max-w-[220px] mt-6 transition-all duration-300 ${isFocused ? 'scale-105 ring-2 ring-white/30 rounded-xl p-2 bg-white/5' : 'opacity-80'}`}
         >
             <motion.div
                 onClick={() => setIsExpanded(!isExpanded)}
@@ -52,7 +63,7 @@ const HairStyleWidget: React.FC<HairStyleWidgetProps> = ({ videoRef }) => {
                         whileTap={{ scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     >
-                        <Scissors className={`w-6 h-6 transition-transform ${isExpanded ? 'scale-110' : 'group-hover:scale-105'}`} />
+                        <span className={`text-2xl transition-transform block ${isExpanded ? 'scale-110' : 'group-hover:scale-105'}`}>💇‍♂️</span>
                     </motion.div>
                     <span className={`text-sm font-light ${isExpanded ? 'font-medium' : (isMounted ? colorScheme.textOpacity : 'opacity-80')}`}>
                         Estilo de Cabello
