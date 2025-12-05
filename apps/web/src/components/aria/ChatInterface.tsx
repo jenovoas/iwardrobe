@@ -63,19 +63,30 @@ const ChatInterface = ({ isListening, onToggleListening }: ChatInterfaceProps) =
         if ("speechSynthesis" in window) {
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = "es-ES"; // Spanish
+            utterance.pitch = 1.1; // Slightly higher pitch for more feminine sound
 
             const voices = window.speechSynthesis.getVoices();
             // Filter for Spanish voices
             const spanishVoices = voices.filter(v => v.lang.includes("es"));
 
             // Try to find a female voice by name (common names in OS/Browsers)
+            // Prioritize female voices
             const femaleVoice = spanishVoices.find(v =>
-                v.name.includes("Google Español") ||
+                v.name.includes("female") ||
+                v.name.includes("Female") ||
+                v.name.includes("woman") ||
+                v.name.includes("Woman") ||
                 v.name.includes("Monica") ||
+                v.name.includes("Mónica") ||
                 v.name.includes("Paulina") ||
                 v.name.includes("Rosa") ||
                 v.name.includes("Helena") ||
                 v.name.includes("Sabina") ||
+                v.name.includes("Laura") ||
+                v.name.includes("Lucia") ||
+                v.name.includes("Lucía") ||
+                v.name.includes("Carmen") ||
+                v.name.includes("Google Español") ||
                 v.name.includes("Microsoft Laura")
             );
 

@@ -141,6 +141,7 @@ const CameraFeed = forwardRef<Webcam, CameraFeedProps>((props, ref) => {
                 </div>
             ) : (
                 <Webcam
+                    suppressHydrationWarning
                     key={`${deviceId}-${resolution}-${facingMode}`}
                     ref={ref}
                     audio={false}

@@ -46,8 +46,40 @@ export default function Home() {
   const [isTryOnActive, setIsTryOnActive] = React.useState(false);
   const [selectedClothingItem, setSelectedClothingItem] = React.useState<ClothingItem | null>(null);
 
+  // Client-side time and date to prevent hydration mismatch
+  const [currentTime, setCurrentTime] = React.useState<string>("");
+  const [currentDate, setCurrentDate] = React.useState<string>("");
+  const [isTimeLoaded, setIsTimeLoaded] = React.useState(false);
+
   // Detect ambient light for adaptive UI colors
   const { lightLevel, isMounted, toggleLightMode, isManualMode } = useAmbientLight(videoRef);
+
+  // Update time every second (client-side only)
+  React.useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      setCurrentTime(`${hours}:${minutes}`);
+
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const dayName = days[now.getDay()];
+      const monthName = months[now.getMonth()];
+      const date = now.getDate();
+      setCurrentDate(`${dayName}, ${monthName} ${date}`);
+
+      setIsTimeLoaded(true);
+    };
+
+    // Initial update
+    updateTime();
+
+    // Update every second
+    const interval = setInterval(updateTime, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Handle item selection and try-on
   const handleItemSelect = (item: ClothingItem) => {
@@ -120,8 +152,12 @@ export default function Home() {
           </div>
           <div className="flex flex-col items-end gap-4">
             <div className="text-right">
-              <div className="text-6xl font-thin" aria-label="Current Time">09:41</div>
-              <div className="text-xl font-light">Wednesday, Dec 4</div>
+              <div className="text-6xl font-thin" aria-label="Current Time">
+                {isTimeLoaded ? currentTime : "--:--"}
+              </div>
+              <div className="text-xl font-light">
+                {isTimeLoaded ? currentDate : "Loading..."}
+              </div>
             </div>
 
             {/* Action Buttons */}

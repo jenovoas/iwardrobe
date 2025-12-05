@@ -94,7 +94,7 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
     };
 
     return (
-        <div className="mt-4 space-y-2 w-full max-w-[280px]">
+        <div className="mt-4 space-y-2 w-full max-w-[220px]">
             {clothingData.map((category, index) => {
                 const isSelected = index === selectedCategoryIndex;
                 const isExpanded = expandedCategory === category.name;
@@ -107,14 +107,14 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
                             transition={{ delay: 0.6 + (index * 0.1) }}
                             onClick={() => handleCategoryClick(category)}
                             className={`
-                                flex items-center justify-between p-3 rounded-lg border 
+                                flex items-center justify-between p-3 rounded-xl border 
                                 transition-all duration-500 cursor-pointer group relative
                                 ${!isMounted
                                     ? isSelected
-                                        ? 'bg-blue-500/30 border-blue-400/50 shadow-lg shadow-blue-500/20'
+                                        ? 'bg-blue-500/30 border-blue-400/50'
                                         : 'bg-white/5 border-white/5 hover:bg-white/10'
                                     : isSelected
-                                        ? `${colorScheme.categorySelectedBg} ${colorScheme.categorySelectedBorder} shadow-lg shadow-blue-500/20`
+                                        ? `${colorScheme.categorySelectedBg} ${colorScheme.categorySelectedBorder}`
                                         : `${colorScheme.categoryBg} ${colorScheme.categoryBorder} ${colorScheme.categoryBgHover}`
                                 }
                                 ${isExpanded ? (isMounted ? colorScheme.categoryExpandedBg : 'bg-white/15') : ''}
@@ -207,7 +207,7 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="mt-4 p-2 bg-blue-500/20 border border-blue-400/30 rounded-lg text-xs text-center"
+                    className="mt-4 p-2 bg-blue-500/20 border border-blue-400/30 rounded-xl text-xs text-center"
                 >
                     👆 Apunta para seleccionar
                 </motion.div>
@@ -219,7 +219,7 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.8 }}
-                    className={`mt-2 p-2 rounded-lg text-xs text-center transition-all duration-500 ${lightLevel === 'dark'
+                    className={`mt-2 p-2 rounded-xl text-xs text-center transition-all duration-500 ${lightLevel === 'dark'
                         ? 'bg-gray-800/60 border border-gray-600/40'
                         : lightLevel === 'bright'
                             ? 'bg-yellow-500/30 border border-yellow-400/50'

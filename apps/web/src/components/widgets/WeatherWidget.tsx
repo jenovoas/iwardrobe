@@ -16,19 +16,28 @@ interface WeatherWidgetProps {
 }
 
 const WeatherWidget: React.FC<WeatherWidgetProps> = ({ videoRef }) => {
+    const [isMounted, setIsMounted] = useState(false);
     const [weather, setWeather] = useState<WeatherData>({
-        location: "Detectando...",
+        location: "Loading...",
         temp: 0,
-        condition: "Cargando...",
+        condition: "Loading...",
         high: 0,
         low: 0,
         icon: "..."
     });
 
     // Detect ambient light and get adaptive color scheme
-    const { lightLevel, isMounted } = useAmbientLight(videoRef);
+    const { lightLevel, colorScheme, isMounted: isLightMounted } = useAmbientLight(videoRef);
+
+    // Set mounted state on client
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     useEffect(() => {
+        // Only run on client after mount
+        if (!isMounted) return;
+
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(async (position) => {
                 const { latitude, longitude } = position.coords;
@@ -79,31 +88,31 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({ videoRef }) => {
                 setWeather(prev => ({ ...prev, location: "Ubicación denegada", condition: "Habilita GPS" }));
             });
         }
-    }, []);
+    }, [isMounted]);
 
     return (
         <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 }}
-            className={`flex items-center gap-3 mt-6 p-3 rounded-xl border transition-all duration-500 ${!isMounted
-                ? 'bg-white/10 border-white/10 backdrop-blur-sm'
-                : lightLevel === 'bright'
-                    ? 'bg-gray-900/80 border-gray-700/80 backdrop-blur-md'
-                    : lightLevel === 'normal'
-                        ? 'bg-white/10 border-white/10 backdrop-blur-sm'
-                        : 'bg-white/5 border-white/5 backdrop-blur-sm'
+            suppressHydrationWarning
+            className={`flex items-center gap-3 mt-6 p-3 rounded-xl border transition-all duration-500 backdrop-blur-xl w-full max-w-[220px] ${!isLightMounted
+                    ? 'bg-white/10 border-white/10'
+                    : `${colorScheme.categoryBg} ${colorScheme.categoryBorder}`
                 }`}
         >
             <span className="text-4xl filter drop-shadow-lg">{weather.icon}</span>
             <div className="flex flex-col">
-                <div className={`text-sm font-medium transition-opacity duration-500 ${!isMounted ? 'opacity-90' : lightLevel === 'bright' ? 'opacity-100' : 'opacity-90'
-                    }`}>{weather.location}</div>
+                <div className={`text-sm font-medium transition-opacity duration-500 ${isMounted ? colorScheme.textOpacity : 'opacity-90'}`}>
+                    {weather.location}
+                </div>
                 <div className="text-3xl font-light leading-none">{weather.temp}°</div>
-                <div className={`text-xs font-medium mt-1 transition-opacity duration-500 ${!isMounted ? 'opacity-80' : lightLevel === 'bright' ? 'opacity-95' : 'opacity-80'
-                    }`}>{weather.condition}</div>
-                <div className={`text-[10px] mt-0.5 transition-opacity duration-500 ${!isMounted ? 'opacity-60' : lightLevel === 'bright' ? 'opacity-80' : 'opacity-60'
-                    }`}>H: {weather.high}° L: {weather.low}°</div>
+                <div className={`text-xs font-medium mt-1 transition-opacity duration-500 ${isMounted ? colorScheme.textOpacity : 'opacity-80'}`}>
+                    {weather.condition}
+                </div>
+                <div className={`text-[10px] mt-0.5 transition-opacity duration-500 ${!isLightMounted ? 'opacity-60' : lightLevel === 'bright' ? 'opacity-80' : 'opacity-60'}`}>
+                    H: {weather.high}° L: {weather.low}°
+                </div>
             </div>
         </motion.div>
     );

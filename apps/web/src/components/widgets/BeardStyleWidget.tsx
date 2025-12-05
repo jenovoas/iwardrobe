@@ -35,7 +35,7 @@ const BeardStyleWidget: React.FC<BeardStyleWidgetProps> = ({ videoRef }) => {
             <motion.div
                 onClick={() => setIsExpanded(!isExpanded)}
                 className={`
-                    flex items-center justify-between p-3 rounded-lg border 
+                    flex items-center justify-between p-3 rounded-xl border 
                     transition-all duration-500 cursor-pointer group relative backdrop-blur-xl
                     ${!isMounted
                         ? isExpanded

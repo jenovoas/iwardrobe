@@ -28,13 +28,13 @@ const HairStyleWidget: React.FC<HairStyleWidgetProps> = ({ videoRef }) => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.6 }}
-            className="w-full max-w-[220px]"
+            className="w-full max-w-[220px] mt-6"
         >
             {/* Category Header */}
             <motion.div
                 onClick={() => setIsExpanded(!isExpanded)}
                 className={`
-                    flex items-center justify-between p-3 rounded-lg border 
+                    flex items-center justify-between p-3 rounded-xl border 
                     transition-all duration-500 cursor-pointer group relative backdrop-blur-xl
                     ${!isMounted
                         ? isExpanded
