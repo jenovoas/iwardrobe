@@ -1,19 +1,23 @@
 "use client";
 
 import React from "react";
+import dynamic from 'next/dynamic';
 import CameraFeed from "@/components/mirror/CameraFeed";
 import OverlayLayer from "@/components/mirror/OverlayLayer";
 import AriaAvatar from "@/components/aria/AriaAvatar";
 import ChatInterface from "@/components/aria/ChatInterface";
-import LoginModal from "@/components/auth/LoginModal";
-import SettingsModal from "@/components/settings/SettingsModal";
-import VirtualTryOn from "@/components/mirror/VirtualTryOn";
+// Dynamic imports for heavy components
+const LoginModal = dynamic(() => import("@/components/auth/LoginModal"), { ssr: false });
+const SettingsModal = dynamic(() => import("@/components/settings/SettingsModal"), { ssr: false });
+const VirtualTryOn = dynamic(() => import("@/components/mirror/VirtualTryOn"), { ssr: false });
+
 import WeatherWidget from "@/components/widgets/WeatherWidget";
 import WardrobeWidgets from "@/components/widgets/WardrobeWidgets";
 import ClothingDetailPanel from "@/components/widgets/ClothingDetailPanel";
 import HairStyleWidget from "@/components/widgets/HairStyleWidget";
 import BeardStyleWidget from "@/components/widgets/BeardStyleWidget";
 import ShoppingWidget from "@/components/widgets/ShoppingWidget";
+import Clock from "@/components/common/Clock"; // Import isolated Clock
 import { useSmartMirror } from "@/hooks/useSmartMirror";
 import { ClothingItem } from "@/data/clothingData";
 import { motion } from "framer-motion";
@@ -51,13 +55,15 @@ export default function Home() {
   // Widget Navigation State
   const [activeView, setActiveView] = React.useState<'menu' | 'wardrobe' | 'hair' | 'beard' | 'shopping'>('menu');
   const [focusedWidgetIndex, setFocusedWidgetIndex] = React.useState(0);
-  const WIDGET_LABELS = ['Wardrobe', 'Hair Style', 'Beard Style', 'Shopping'];
-  const WIDGET_ICONS = [
+
+  // Memoized constants
+  const WIDGET_LABELS = React.useMemo(() => ['Wardrobe', 'Hair Style', 'Beard Style', 'Shopping'], []);
+  const WIDGET_ICONS = React.useMemo(() => [
     <Shirt key="wardrobe" />,
     <Scissors key="hair" />,
     <User key="beard" />,
     <ShoppingBag key="shopping" />
-  ];
+  ], []);
   const WIDGET_COUNT = WIDGET_LABELS.length;
 
   // Handle Swipes for Navigation
@@ -75,7 +81,7 @@ export default function Home() {
         setActiveView(views[focusedWidgetIndex]);
       }
     }
-  }, [swipeDirection, activeView, focusedWidgetIndex]);
+  }, [swipeDirection, activeView, focusedWidgetIndex, WIDGET_COUNT]);
 
   // Handle Back Navigation with Gesture
   React.useEffect(() => {
@@ -90,40 +96,11 @@ export default function Home() {
     }
   }, [gesture, activeView, focusedWidgetIndex]);
 
-  // Client-side time and date to prevent hydration mismatch
-  const [currentTime, setCurrentTime] = React.useState<string>("");
-  const [currentDate, setCurrentDate] = React.useState<string>("");
-  const [isTimeLoaded, setIsTimeLoaded] = React.useState(false);
+  // Removed local clock logic. Now using Clock component.
 
   // Detect ambient light for adaptive UI colors
-  const { lightLevel, isMounted, toggleLightMode, isManualMode } = useAmbientLight(videoRef);
-
-  // Update time every second (client-side only)
-  React.useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      const hours = now.getHours().toString().padStart(2, '0');
-      const minutes = now.getMinutes().toString().padStart(2, '0');
-      setCurrentTime(`${hours}:${minutes}`);
-
-      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const dayName = days[now.getDay()];
-      const monthName = months[now.getMonth()];
-      const date = now.getDate();
-      setCurrentDate(`${dayName}, ${monthName} ${date}`);
-
-      setIsTimeLoaded(true);
-    };
-
-    // Initial update
-    updateTime();
-
-    // Update every second
-    const interval = setInterval(updateTime, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
+  // Only one call to useAmbientLight here
+  const { lightLevel, isMounted, toggleLightMode, isManualMode, colorScheme } = useAmbientLight(videoRef);
 
   // Handle item selection and try-on
   const handleItemSelect = (item: ClothingItem) => {
@@ -262,14 +239,7 @@ export default function Home() {
           </div>
 
           <div className="flex flex-col items-end gap-4 h-full">
-            <div className="text-right">
-              <div className="text-6xl font-thin" aria-label="Current Time">
-                {isTimeLoaded ? currentTime : "--:--"}
-              </div>
-              <div className="text-xl font-light">
-                {isTimeLoaded ? currentDate : "Loading..."}
-              </div>
-            </div>
+            <Clock />
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2">
@@ -340,24 +310,30 @@ export default function Home() {
             {/* Active Widget View */}
             {activeView === 'hair' && (
               <HairStyleWidget
-                videoRef={videoRef}
                 isFocused={true}
                 swipeDirection={swipeDirection}
+                lightLevel={lightLevel}
+                colorScheme={colorScheme}
+                isMounted={isMounted}
               />
             )}
             {activeView === 'beard' && (
               <BeardStyleWidget
-                videoRef={videoRef}
                 isFocused={true}
                 swipeDirection={swipeDirection}
+                lightLevel={lightLevel}
+                colorScheme={colorScheme}
+                isMounted={isMounted}
               />
             )}
             {activeView === 'shopping' && (
               <ShoppingWidget
-                videoRef={videoRef}
                 isFocused={true}
                 swipeDirection={swipeDirection}
                 selectedItem={selectedClothingItem}
+                lightLevel={lightLevel}
+                colorScheme={colorScheme}
+                isMounted={isMounted}
               />
             )}
           </div>
