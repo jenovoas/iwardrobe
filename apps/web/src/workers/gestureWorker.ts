@@ -2,8 +2,9 @@
  * Web Worker for offloading MediaPipe gesture recognition
  * This prevents blocking the main thread during heavy ML inference
  */
+import { GestureRecognizer, FilesetResolver } from "@mediapipe/tasks-vision";
 
-let gestureRecognizer: any = null;
+let gestureRecognizer: GestureRecognizer | null = null;
 let isInitialized = false;
 
 // Listen for initialization message from main thread
@@ -33,10 +34,6 @@ self.onmessage = async (event: MessageEvent) => {
 
 async function initializeGestureRecognizer() {
     try {
-        // Import MediaPipe libraries
-        const { GestureRecognizer, FilesetResolver } = await import(
-            "@mediapipe/tasks-vision"
-        );
 
         const vision = await FilesetResolver.forVisionTasks(
             "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
@@ -56,7 +53,7 @@ async function initializeGestureRecognizer() {
                 minTrackingConfidence: 0.3,
             });
             console.log("[Worker] Gesture recognizer initialized with GPU");
-        } catch (gpuError) {
+        } catch {
             console.warn("[Worker] GPU failed, using CPU");
             gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
                 baseOptions: {
@@ -78,7 +75,7 @@ async function initializeGestureRecognizer() {
     }
 }
 
-async function detectGestures(frameData: any, timestamp: number) {
+async function detectGestures(frameData: ImageBitmap, timestamp: number) {
     if (!gestureRecognizer) return;
 
     try {

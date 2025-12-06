@@ -31,6 +31,7 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({ videoRef }) => {
 
     // Set mounted state on client
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsMounted(true);
     }, []);
 

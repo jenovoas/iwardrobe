@@ -49,11 +49,11 @@ async def create_or_update_biometrics(
     
     if profile:
         # Update existing
-        for key, value in biometrics.dict(exclude_unset=True).items():
+        for key, value in biometrics.model_dump(exclude_unset=True).items():
             setattr(profile, key, value)
     else:
         # Create new
-        profile = models.BiometricProfile(**biometrics.dict(), user_id=current_user.id)
+        profile = models.BiometricProfile(**biometrics.model_dump(), user_id=current_user.id)
         db.add(profile)
     
     await db.commit()

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import {
     PoseLandmarker,
     FilesetResolver,
@@ -37,7 +37,6 @@ export const usePoseLandmarker = (videoRef: React.RefObject<HTMLVideoElement | n
                 );
 
                 let landmarker: PoseLandmarker | null = null;
-                let delegate: "GPU" | "CPU" = "GPU";
 
                 try {
                     landmarker = await PoseLandmarker.createFromOptions(vision, {
@@ -48,9 +47,8 @@ export const usePoseLandmarker = (videoRef: React.RefObject<HTMLVideoElement | n
                         runningMode: "VIDEO",
                     });
                     console.log("[MediaPipe] Pose landmarker initialized with GPU delegate");
-                } catch (gpuError) {
+                } catch {
                     console.warn("[MediaPipe] GPU delegate failed for pose, falling back to CPU");
-                    delegate = "CPU";
 
                     // Small delay before fallback attempt
                     await new Promise(resolve => setTimeout(resolve, POSE_CONFIG.GPU_FALLBACK_DELAY));
@@ -113,7 +111,7 @@ export const usePoseLandmarker = (videoRef: React.RefObject<HTMLVideoElement | n
                 cancelAnimationFrame(requestRef.current);
             }
         };
-    }, [poseLandmarker]);
+    }, [poseLandmarker, videoRef]);
 
     return { landmarks };
 };

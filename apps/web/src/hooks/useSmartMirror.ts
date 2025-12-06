@@ -76,6 +76,7 @@ export const useSmartMirror = () => {
         switch (gesture) {
             case "Thumb_Up":
                 if (!user && !isLoginOpen && !isSettingsOpen) {
+                    // eslint-disable-next-line react-hooks/set-state-in-effect
                     setIsLoginOpen(true);
                 }
                 break;

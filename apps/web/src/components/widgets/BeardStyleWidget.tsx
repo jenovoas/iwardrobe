@@ -117,7 +117,15 @@ const BeardStyleWidget: React.FC<BeardStyleWidgetProps> = ({ isFocused = false, 
     );
 };
 
-const BeardStyleItem = ({ style, isSelected, setSelectedStyle, colorScheme, isMounted }: any) => {
+interface BeardStyleItemProps {
+    style: BeardStyle;
+    isSelected: boolean;
+    setSelectedStyle: React.Dispatch<React.SetStateAction<string | null>>;
+    colorScheme: ColorScheme;
+    isMounted: boolean;
+}
+
+const BeardStyleItem = ({ style, isSelected, setSelectedStyle, colorScheme, isMounted }: BeardStyleItemProps) => {
     const theme = useWidgetTheme({
         colorScheme,
         isMounted,

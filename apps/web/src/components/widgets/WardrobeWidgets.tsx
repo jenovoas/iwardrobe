@@ -33,6 +33,7 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
     // Handle swipe navigation between categories
     useEffect(() => {
         if (swipeDirection === "left") {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedCategoryIndex(prev =>
                 prev < clothingData.length - 1 ? prev + 1 : 0
             );
@@ -46,6 +47,7 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
     // Detect hover with hand position
     useEffect(() => {
         if (!handPosition || !isPointing) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setHoveredItemId(null);
             return;
         }
@@ -145,6 +147,17 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
     );
 }
 
+interface WardrobeListProps {
+    selectedCategoryIndex: number;
+    expandedCategory: string | null;
+    hoveredItemId: string | null;
+    isMounted: boolean;
+    colorScheme: ReturnType<typeof useAmbientLight>['colorScheme'];
+    onCategoryClick: (category: ClothingCategory) => void;
+    onItemSelect: (item: ClothingItem) => void;
+    swipeDirection: "left" | "right" | "up" | "down" | null;
+}
+
 // Memoized list component to prevent re-renders on hand position update
 const WardrobeList = React.memo(({
     selectedCategoryIndex,
@@ -154,8 +167,8 @@ const WardrobeList = React.memo(({
     colorScheme,
     onCategoryClick,
     onItemSelect,
-    swipeDirection // Received from parent
-}: any) => {
+    swipeDirection
+}: WardrobeListProps) => {
     // Refs for scroll containers of each category
     const categoryRefs = React.useRef<{ [key: string]: HTMLDivElement | null }>({});
 
@@ -239,9 +252,9 @@ const WardrobeList = React.memo(({
                         <AnimatePresence>
                             {isExpanded && (
                                 <motion.div
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: "auto", opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
+                                    initial={{ x: -50, opacity: 0 }}
+                                    animate={{ x: 0, opacity: 1 }}
+                                    exit={{ x: -50, opacity: 0 }}
                                     transition={{ duration: 0.3 }}
                                     className="overflow-hidden"
                                 >
@@ -290,5 +303,7 @@ const WardrobeList = React.memo(({
         </>
     );
 });
+
+WardrobeList.displayName = 'WardrobeList';
 
 export default WardrobeWidgets;

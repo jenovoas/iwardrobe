@@ -6,7 +6,7 @@ import {
     FilesetResolver,
     GestureRecognizerResult,
 } from "@mediapipe/tasks-vision";
-import { throttle, measureAsync } from "@/utils/performance";
+
 import Webcam from "react-webcam";
 
 export interface HandPosition {
@@ -62,7 +62,6 @@ export const useHandGestures = (
                 );
 
                 let recognizer: GestureRecognizer | null = null;
-                let delegate: "GPU" | "CPU" = "GPU";
 
                 try {
                     recognizer = await GestureRecognizer.createFromOptions(vision, {
@@ -73,9 +72,8 @@ export const useHandGestures = (
                         },
                     });
                     console.log("[MediaPipe] Gesture recognizer initialized with GPU delegate");
-                } catch (gpuError) {
+                } catch {
                     console.warn("[MediaPipe] GPU delegate failed, falling back to CPU");
-                    delegate = "CPU";
 
                     // Small delay before fallback attempt
                     await new Promise(resolve => setTimeout(resolve, GESTURE_CONFIG.GPU_FALLBACK_DELAY));
@@ -110,7 +108,7 @@ export const useHandGestures = (
         if (!videoRef.current) return null;
         return videoRef.current instanceof HTMLVideoElement
             ? videoRef.current
-            : (videoRef.current as any)?.video || null;
+            : (videoRef.current as Webcam)?.video || null;
     }, [videoRef]);
 
     // Detect swipe direction

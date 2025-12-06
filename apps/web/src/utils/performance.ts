@@ -7,13 +7,13 @@
 /**
  * Debounce function execution with configurable delay
  */
-export function debounce<T extends (...args: any[]) => any>(
-  func: T,
+export function debounce<A extends unknown[], R>(
+  func: (...args: A) => R,
   wait: number
-): (...args: Parameters<T>) => void {
+): (...args: A) => void {
   let timeout: NodeJS.Timeout;
 
-  return function executedFunction(...args: Parameters<T>) {
+  return function executedFunction(...args: A) {
     const later = () => {
       clearTimeout(timeout);
       func(...args);
@@ -27,13 +27,13 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * Throttle function execution with configurable interval
  */
-export function throttle<T extends (...args: any[]) => any>(
-  func: T,
+export function throttle<A extends unknown[], R>(
+  func: (...args: A) => R,
   limit: number
-): (...args: Parameters<T>) => void {
+): (...args: A) => void {
   let inThrottle: boolean;
 
-  return function executedFunction(...args: Parameters<T>) {
+  return function executedFunction(...args: A) {
     if (!inThrottle) {
       func(...args);
       inThrottle = true;
@@ -113,7 +113,6 @@ export function createCleanup() {
 
 /**
  * Preload resources (images, fonts, etc.)
- */
 export function preloadResource(url: string, type: "image" | "font" | "script" | "style") {
   if (typeof document === "undefined") return;
 

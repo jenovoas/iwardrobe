@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { throttle } from '@/utils/performance';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 export type LightLevel = 'dark' | 'normal' | 'bright';
 
@@ -87,10 +86,10 @@ export function useAmbientLight(videoRef?: React.RefObject<HTMLVideoElement | nu
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const animationFrameRef = useRef<number | null>(null);
     const lastUpdateRef = useRef<number>(0);
-    const analyzeThrottledRef = useRef<Function | null>(null);
 
     // Set mounted state on client side only
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsMounted(true);
     }, []);
 
@@ -99,6 +98,7 @@ export function useAmbientLight(videoRef?: React.RefObject<HTMLVideoElement | nu
         if (!isMounted) return;
 
         const effectiveLevel = manualOverride || lightLevel;
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setColorScheme(COLOR_SCHEMES[effectiveLevel]);
     }, [lightLevel, manualOverride, isMounted]);
 

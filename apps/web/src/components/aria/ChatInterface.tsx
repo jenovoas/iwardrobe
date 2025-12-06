@@ -31,6 +31,11 @@ interface SpeechRecognitionAlternative {
     confidence: number;
 }
 
+interface SpeechRecognitionErrorEvent extends Event {
+    error: 'no-speech' | 'aborted' | 'audio-capture' | 'network' | 'not-allowed' | 'service-not-allowed' | 'bad-grammar' | 'language-not-supported';
+    message: string;
+}
+
 interface SpeechRecognition extends EventTarget {
     continuous: boolean;
     interimResults: boolean;
@@ -39,7 +44,7 @@ interface SpeechRecognition extends EventTarget {
     stop: () => void;
     onresult: ((event: SpeechRecognitionEvent) => void) | null;
     onend: (() => void) | null;
-    onerror: ((event: any) => void) | null;
+    onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
 }
 
 declare global {
@@ -203,14 +208,14 @@ const ChatInterface = ({ isListening }: ChatInterfaceProps) => {
                         try {
                             recognitionRef.current.start();
                             console.log("Restarting recognition...");
-                        } catch (e) {
+                        } catch {
                             console.log("Recognition already started");
                         }
                     }
                 };
 
-                recognition.onerror = (event: any) => {
-                    console.error("Speech recognition error", event);
+                recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+                    console.error(`Speech recognition error: ${event.error}: ${event.message}`);
                 };
 
                 recognitionRef.current = recognition;
@@ -225,7 +230,7 @@ const ChatInterface = ({ isListening }: ChatInterfaceProps) => {
         if (isListening) {
             try {
                 recognitionRef.current.start();
-            } catch (e) {
+            } catch {
                 // Already started
             }
         } else {
@@ -258,6 +263,7 @@ const ChatInterface = ({ isListening }: ChatInterfaceProps) => {
 
     // Auto-hide chat logic
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setShowChat(true);
         const timer = setTimeout(() => {
             if (!isListening && !input) {

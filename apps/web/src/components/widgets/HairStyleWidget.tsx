@@ -117,7 +117,15 @@ const HairStyleWidget: React.FC<HairStyleWidgetProps> = ({ isFocused = false, sw
     );
 };
 
-const HairStyleItem = ({ style, isSelected, setSelectedStyle, colorScheme, isMounted }: any) => {
+interface HairStyleItemProps {
+    style: HairStyle;
+    isSelected: boolean;
+    setSelectedStyle: React.Dispatch<React.SetStateAction<string | null>>;
+    colorScheme: ColorScheme;
+    isMounted: boolean;
+}
+
+const HairStyleItem = ({ style, isSelected, setSelectedStyle, colorScheme, isMounted }: HairStyleItemProps) => {
     const theme = useWidgetTheme({
         colorScheme,
         isMounted,

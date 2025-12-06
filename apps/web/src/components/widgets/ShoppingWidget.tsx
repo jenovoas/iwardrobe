@@ -177,8 +177,16 @@ const ShoppingWidget: React.FC<ShoppingWidgetProps> = ({ isFocused = false, swip
     );
 };
 
+interface ShoppingOptionItemProps {
+    option: ShoppingOption;
+    isSelected: boolean;
+    setSelectedOption: React.Dispatch<React.SetStateAction<string | null>>;
+    colorScheme: ColorScheme;
+    isMounted: boolean;
+}
+
 // Sub-component to safely use the hook
-const ShoppingOptionItem = ({ option, isSelected, setSelectedOption, colorScheme, isMounted }: any) => {
+const ShoppingOptionItem = ({ option, isSelected, setSelectedOption, colorScheme, isMounted }: ShoppingOptionItemProps) => {
     const theme = useWidgetTheme({
         colorScheme,
         isMounted,

@@ -24,11 +24,12 @@ const CameraFeed = forwardRef<Webcam, CameraFeedProps>((props, ref) => {
     const { deviceId, resolution = "auto" } = props;
     const [isClient, setIsClient] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
+    const [facingMode] = useState<"user" | "environment">("user");
     const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Set client flag for hydration
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsClient(true);
     }, []);
 

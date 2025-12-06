@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+sqlalchemy
+aiosqlite
+python-jose[cryptography]
+passlib
+bcrypt==3.2.0
+pytest
+httpx
+greenlet
+pydantic[email]
+python-multipart

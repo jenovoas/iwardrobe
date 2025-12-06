@@ -1,51 +1,40 @@
-import requests
+from fastapi.testclient import TestClient
+from app.main import app
 
-BASE_URL = "http://localhost:8000"
-
-def test_biometrics_flow():
-    # 1. Login to get token
+def get_auth_token(client: TestClient):
+    # Ensure user is registered from the auth test, or handle it here
     email = "test@example.com"
     password = "password123"
     
-    print("Logging in...")
-    login_data = {
-        "username": email,
-        "password": password
-    }
-    response = requests.post(f"{BASE_URL}/token", data=login_data)
-    
-    if response.status_code != 200:
-        print(f"Login failed: {response.text}")
-        return
+    # Register user first (ignore if already exists)
+    client.post("/users/", json={"email": email, "password": password, "full_name": "Test User"})
 
-    token = response.json().get("access_token")
-    headers = {"Authorization": f"Bearer {token}"}
-    print(f"Login successful.")
+    # Login to get token
+    login_data = {"username": email, "password": password}
+    response = client.post("/token", data=login_data)
+    assert response.status_code == 200
+    return response.json()["access_token"]
 
-    # 2. Create/Update Biometrics
-    print("Updating biometrics...")
-    bio_data = {
-        "face_shape": "Oval",
-        "skin_tone": "#F5D0C5",
-        "undertone": "Warm",
-        "body_shape": "Hourglass",
-        "height_cm": 170.5
-    }
-    
-    response = requests.post(f"{BASE_URL}/biometrics/me", json=bio_data, headers=headers)
-    if response.status_code == 200:
-        print(f"Biometrics updated: {response.json()}")
-    else:
-        print(f"Update failed: {response.text}")
-        return
+def test_biometrics_flow():
+    with TestClient(app) as client:
+        token = get_auth_token(client)
+        headers = {"Authorization": f"Bearer {token}"}
 
-    # 3. Get Biometrics
-    print("Fetching biometrics...")
-    response = requests.get(f"{BASE_URL}/biometrics/me", headers=headers)
-    if response.status_code == 200:
-        print(f"Fetched biometrics: {response.json()}")
-    else:
-        print(f"Fetch failed: {response.text}")
+        # 2. Create/Update Biometrics
+        bio_data = {
+            "face_shape": "Oval",
+            "skin_tone": "#F5D0C5",
+            "undertone": "Warm",
+            "body_shape": "Hourglass",
+            "height_cm": 170.5
+        }
+        
+        response = client.post("/biometrics/me", json=bio_data, headers=headers)
+        assert response.status_code == 200
+        assert response.json()["face_shape"] == "Oval"
 
-if __name__ == "__main__":
-    test_biometrics_flow()
+        # 3. Get Biometrics
+        response = client.get("/biometrics/me", headers=headers)
+        assert response.status_code == 200
+        assert response.json()["skin_tone"] == "#F5D0C5"
+

@@ -1,31 +1,36 @@
-import requests
+from fastapi.testclient import TestClient
+from app.main import app
 
-BASE_URL = "http://localhost:8000"
 
-def test_recommendation_flow():
-    # 1. Login
+def get_auth_token(client: TestClient):
     email = "test@example.com"
     password = "password123"
-    
-    print("Logging in...")
+
+    client.post("/users/", json={"email": email, "password": password, "full_name": "Test User"})
+
     login_data = {"username": email, "password": password}
-    response = requests.post(f"{BASE_URL}/token", data=login_data)
-    
-    if response.status_code != 200:
-        print(f"Login failed: {response.text}")
-        return
+    response = client.post("/token", data=login_data)
+    assert response.status_code == 200
+    return response.json()["access_token"]
 
-    token = response.json().get("access_token")
-    headers = {"Authorization": f"Bearer {token}"}
 
-    # 2. Get Recommendations
-    print("Fetching recommendations...")
-    response = requests.get(f"{BASE_URL}/recommendations/me", headers=headers)
-    
-    if response.status_code == 200:
-        print(f"Recommendations: {response.json()}")
-    else:
-        print(f"Failed to get recommendations: {response.text}")
+def test_recommendation_flow():
+    with TestClient(app) as client:
+        token = get_auth_token(client)
+        headers = {"Authorization": f"Bearer {token}"}
 
-if __name__ == "__main__":
-    test_recommendation_flow()
+        # First, ensure biometrics are set, as recommendations might depend on them
+        bio_data = {
+            "face_shape": "Oval", "skin_tone": "#F5D0C5", "undertone": "Warm",
+            "body_shape": "Hourglass", "height_cm": 170.5
+        }
+        client.post("/biometrics/me", json=bio_data, headers=headers)
+
+        # 2. Get Recommendations
+        response = client.get("/recommendations/me", headers=headers)
+
+        assert response.status_code == 200
+        recommendations = response.json()
+        assert "colors" in recommendations
+        assert "styles" in recommendations
+        assert "tips" in recommendations
