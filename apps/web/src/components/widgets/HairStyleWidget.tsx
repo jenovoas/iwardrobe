@@ -22,6 +22,10 @@ const hairStyles: HairStyle[] = [
     { id: '1', name: 'Corte Clásico', icon: <Scissors className="w-5 h-5" /> },
     { id: '2', name: 'Fade Moderno', icon: <Scissors className="w-5 h-5 rotate-90" /> },
     { id: '3', name: 'Cabello Largo', icon: <User className="w-5 h-5" /> },
+    { id: '4', name: 'Buzz Cut', icon: <Scissors className="w-5 h-5 -rotate-45" /> },
+    { id: '5', name: 'Pompadour', icon: <User className="w-5 h-5 scale-110" /> },
+    { id: '6', name: 'Flequillo', icon: <User className="w-5 h-5 -rotate-12" /> },
+    { id: '7', name: 'Undercut', icon: <Scissors className="w-5 h-5 rotate-180" /> },
 ];
 
 const HairStyleWidget: React.FC<HairStyleWidgetProps> = ({ isFocused = false, swipeDirection, colorScheme, isMounted }) => {

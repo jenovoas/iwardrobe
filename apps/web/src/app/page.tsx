@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useCallback } from "react";
 import dynamic from 'next/dynamic';
 import CameraFeed from "@/components/mirror/CameraFeed";
 import OverlayLayer from "@/components/mirror/OverlayLayer";
@@ -105,11 +105,11 @@ export default function Home() {
   const { lightLevel, isMounted, toggleLightMode, isManualMode, colorScheme } = useAmbientLight(videoRef);
 
   // Handle item selection and try-on
-  const handleItemSelect = (item: ClothingItem) => {
+  const handleItemSelect = useCallback((item: ClothingItem) => {
     setSelectedClothingItem(item);
-  };
+  }, []);
 
-  const handleTryOn = (item: ClothingItem) => {
+  const handleTryOn = useCallback((item: ClothingItem) => {
     let slot: keyof OutfitState | undefined;
     if (item.category === "Camisas" || item.category === "Abrigos") slot = "top";
     else if (item.category === "Pantalones") slot = "bottom";
@@ -122,7 +122,7 @@ export default function Home() {
 
     setIsTryOnActive(true);
     setSelectedClothingItem(null);
-  };
+  }, []);
 
   const handleRemoveItem = (slot: keyof OutfitState) => {
     setOutfit(prev => {
@@ -191,9 +191,9 @@ export default function Home() {
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8 }}
-          className="flex justify-between items-start p-8 h-full"
+          className="flex justify-between items-start p-8 h-full pointer-events-none"
         >
-          <div className="flex flex-col h-full justify-between">
+          <div className="flex flex-col h-full justify-between pointer-events-auto">
             <div className="flex flex-col gap-4">
               <div className="p-3 rounded-xl backdrop-blur-md bg-black/10 w-fit relative">
                 <h1 className="text-4xl font-bold tracking-widest text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]" aria-label="iWARDROBE Application">iWARDROBE</h1>
@@ -210,9 +210,9 @@ export default function Home() {
             </div>
 
             {/* MAIN CONTENT AREA */}
-            <div className="flex-1 flex items-center ml-8">
+            <div className="flex-1 flex items-center ml-8 pointer-events-auto">
               {activeView === 'menu' && (
-                <div className="flex flex-col gap-4 w-64">
+                <div className="flex flex-col gap-4 w-64 pointer-events-auto">
                   {WIDGET_LABELS.map((label, index) => (
                     <motion.div
                       key={label}
@@ -223,7 +223,12 @@ export default function Home() {
                         scale: focusedWidgetIndex === index ? 1.05 : 1,
                         backgroundColor: focusedWidgetIndex === index ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.05)"
                       }}
-                      className={`p-4 rounded-xl backdrop-blur-md border border-white/10 flex items-center gap-4 transition-all duration-300 ${focusedWidgetIndex === index ? 'ring-2 ring-white/50 shadow-lg' : ''}`}
+                      onClick={() => {
+                        const views: ('wardrobe' | 'hair' | 'beard' | 'shopping')[] = ['wardrobe', 'hair', 'beard', 'shopping'];
+                        setActiveView(views[index]);
+                        setFocusedWidgetIndex(index);
+                      }}
+                      className={`p-4 rounded-xl backdrop-blur-md border border-white/10 flex items-center gap-4 transition-all duration-300 cursor-pointer hover:bg-white/10 ${focusedWidgetIndex === index ? 'ring-2 ring-white/50 shadow-lg' : ''}`}
                     >
                       <span className="text-2xl">{WIDGET_ICONS[index]}</span>
                       <span className={`text-lg font-medium ${focusedWidgetIndex === index ? 'text-white' : 'text-white/70'}`}>{label}</span>
@@ -261,7 +266,7 @@ export default function Home() {
             )}
           </div>
 
-          <div className="flex flex-col items-end gap-4 h-full">
+          <div className="flex flex-col items-end gap-4 h-full pointer-events-auto">
             <Clock />
 
             {/* Action Buttons */}
@@ -367,7 +372,7 @@ export default function Home() {
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.8, duration: 0.8 }}
-          className="absolute bottom-8 right-8 z-40 flex flex-col-reverse items-end gap-4"
+          className="absolute bottom-8 right-8 z-40 flex flex-col-reverse items-end gap-4 pointer-events-auto"
         >
           {/* Avatar as Button */}
           <button
@@ -403,11 +408,16 @@ export default function Home() {
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="absolute bottom-8 left-8 pointer-events-none"
+            className="absolute bottom-8 left-8 pointer-events-auto"
           >
-            <div className="flex items-center gap-2 p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/50">
-              <span>✊ Closed Fist to Go Back</span>
-            </div>
+            <button
+              onClick={() => setActiveView('menu')}
+              className="flex items-center gap-2 p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/70 hover:bg-black/60 hover:text-white transition-all cursor-pointer"
+            >
+              <span className="text-xl">🔙</span>
+              <span className="text-sm font-medium">Volver al Menú</span>
+              <span className="text-xs opacity-50 border-l border-white/20 pl-2 ml-1">✊ Closed Fist</span>
+            </button>
           </motion.div>
         )}
       </OverlayLayer>

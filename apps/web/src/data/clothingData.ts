@@ -79,6 +79,46 @@ export const clothingData: ClothingCategory[] = [
                 size: "M",
                 brand: "H&M",
                 lastWorn: "2024-11-18"
+            },
+            {
+                id: "shirt-7",
+                name: "Camisa Polo Blanca",
+                category: "Camisas",
+                image: "/images/clothing/shirt-polo-white.png",
+                color: "Blanco",
+                size: "M",
+                brand: "Lacoste",
+                lastWorn: "2024-12-05"
+            },
+            {
+                id: "shirt-8",
+                name: "Camiseta Básica Negra",
+                category: "Camisas",
+                image: "/images/clothing/tshirt-black.png",
+                color: "Negro",
+                size: "M",
+                brand: "Zara",
+                lastWorn: "2024-12-01"
+            },
+            {
+                id: "shirt-9",
+                name: "Camisa Franela Verde",
+                category: "Camisas",
+                image: "/images/clothing/shirt-flannel-green.png",
+                color: "Verde",
+                size: "L",
+                brand: "Patagonia",
+                lastWorn: "2024-11-15"
+            },
+            {
+                id: "shirt-10",
+                name: "Camisa Seda Negra",
+                category: "Camisas",
+                image: "/images/clothing/shirt-silk-black.png",
+                color: "Negro",
+                size: "M",
+                brand: "Gucci",
+                lastWorn: "2024-10-30"
             }
         ]
     },
@@ -145,6 +185,36 @@ export const clothingData: ClothingCategory[] = [
                 size: "32",
                 brand: "Banana Republic",
                 lastWorn: "2024-12-01"
+            },
+            {
+                id: "pants-7",
+                name: "Joggers Grises",
+                category: "Pantalones",
+                image: "/images/clothing/joggers-gray.png",
+                color: "Gris",
+                size: "M",
+                brand: "Nike",
+                lastWorn: "2024-12-04"
+            },
+            {
+                id: "pants-8",
+                name: "Shorts Denim",
+                category: "Pantalones",
+                image: "/images/clothing/shorts-denim.png",
+                color: "Azul",
+                size: "32",
+                brand: "Levi's",
+                lastWorn: "2024-11-10"
+            },
+            {
+                id: "pants-9",
+                name: "Pantalón Pana Marrón",
+                category: "Pantalones",
+                image: "/images/clothing/corduroy-brown.png",
+                color: "Marrón",
+                size: "32",
+                brand: "Zara",
+                lastWorn: "2024-11-25"
             }
         ]
     },
@@ -201,6 +271,36 @@ export const clothingData: ClothingCategory[] = [
                 size: "42",
                 brand: "Cole Haan",
                 lastWorn: "2024-11-24"
+            },
+            {
+                id: "shoes-6",
+                name: "Botas Timberland",
+                category: "Zapatos",
+                image: "/images/clothing/boots-timberland.png",
+                color: "Trigo",
+                size: "43",
+                brand: "Timberland",
+                lastWorn: "2024-11-15"
+            },
+            {
+                id: "shoes-7",
+                name: "Sandalias Cuero",
+                category: "Zapatos",
+                image: "/images/clothing/sandals-leather.png",
+                color: "Marrón",
+                size: "42",
+                brand: "Birkenstock",
+                lastWorn: "2024-11-05"
+            },
+            {
+                id: "shoes-8",
+                name: "Zapatillas Altas Rojas",
+                category: "Zapatos",
+                image: "/images/clothing/sneakers-high-red.png",
+                color: "Rojo",
+                size: "42",
+                brand: "Converse",
+                lastWorn: "2024-12-01"
             }
         ]
     },
@@ -257,6 +357,26 @@ export const clothingData: ClothingCategory[] = [
                 size: "M",
                 brand: "Hugo Boss",
                 lastWorn: "2024-11-27"
+            },
+            {
+                id: "coat-6",
+                name: "Gabardina Beige",
+                category: "Abrigos",
+                image: "/images/clothing/trench-beige.png",
+                color: "Beige",
+                size: "M",
+                brand: "Burberry",
+                lastWorn: "2024-11-10"
+            },
+            {
+                id: "coat-7",
+                name: "Chaqueta Denim",
+                category: "Abrigos",
+                image: "/images/clothing/jacket-denim.png",
+                color: "Azul",
+                size: "M",
+                brand: "Levi's",
+                lastWorn: "2024-11-18"
             }
         ]
     },
@@ -323,6 +443,26 @@ export const clothingData: ClothingCategory[] = [
                 size: "20L",
                 brand: "Herschel",
                 lastWorn: "2024-12-01"
+            },
+            {
+                id: "acc-7",
+                name: "Sombrero Fedora",
+                category: "Accesorios",
+                image: "/images/clothing/hat-fedora.png",
+                color: "Negro",
+                size: "58",
+                brand: "Brixton",
+                lastWorn: "2024-11-20"
+            },
+            {
+                id: "acc-8",
+                name: "Corbata Seda Roja",
+                category: "Accesorios",
+                image: "/images/clothing/tie-red.png",
+                color: "Rojo",
+                size: "Única",
+                brand: "Hermès",
+                lastWorn: "2024-11-15"
             }
         ]
     }

@@ -9,7 +9,7 @@ const OverlayLayer = ({ children }: { children?: React.ReactNode }) => {
           but usually UI elements here will capture events. 
           pointer-events-none on container, pointer-events-auto on children.
       */}
-            <div className="relative w-full h-full p-8 flex flex-col justify-between pointer-events-auto">
+            <div className="relative w-full h-full p-8 flex flex-col justify-between pointer-events-none">
                 {children}
             </div>
         </div>

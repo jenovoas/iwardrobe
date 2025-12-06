@@ -22,6 +22,10 @@ const beardStyles: BeardStyle[] = [
     { id: '1', name: 'Barba Completa', icon: <User className="w-5 h-5" /> },
     { id: '2', name: 'Candado', icon: <User className="w-5 h-5 opacity-80" /> },
     { id: '3', name: 'Afeitado', icon: <User className="w-5 h-5 opacity-60" /> },
+    { id: '4', name: 'Barba de 3 Días', icon: <User className="w-5 h-5 opacity-70" /> },
+    { id: '5', name: 'Bigote', icon: <User className="w-5 h-5" style={{ clipPath: 'inset(50% 0 0 0)' }} /> }, // Stylized
+    { id: '6', name: 'Perilla', icon: <User className="w-5 h-5" /> },
+    { id: '7', name: 'Van Dyke', icon: <User className="w-5 h-5" /> },
 ];
 
 const BeardStyleWidget: React.FC<BeardStyleWidgetProps> = ({ isFocused = false, swipeDirection, colorScheme, isMounted }) => {

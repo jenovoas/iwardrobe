@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clothingData, ClothingCategory, ClothingItem } from '@/data/clothingData';
 import { HandPosition } from '@/hooks/useHandGestures';
@@ -81,22 +81,103 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
         }
     }, [handPosition, isPointing, expandedCategory]);
 
-    const handleCategoryClick = (category: ClothingCategory) => {
-        if (expandedCategory === category.name) {
-            setExpandedCategory(null);
-        } else {
-            setExpandedCategory(category.name);
-        }
-    };
+    const handleCategoryClick = useCallback((category: ClothingCategory) => {
+        setExpandedCategory(prev => prev === category.name ? null : category.name);
+    }, []);
 
-    const handleItemClick = (item: ClothingItem) => {
+    const handleItemClick = useCallback((item: ClothingItem) => {
         if (onItemSelect) {
             onItemSelect(item);
         }
-    };
+    }, [onItemSelect]);
 
     return (
-        <div className={`mt-4 space-y-2 w-full max-w-[220px] transition-all duration-300 ${isFocused ? 'scale-105 ring-2 ring-white/30 rounded-xl p-2 bg-white/5' : 'opacity-80'}`}>
+        <div className={`mt-4 space-y-2 w-full max-w-[220px] transition-all duration-300 pointer-events-auto ${isFocused ? 'scale-105 ring-2 ring-white/30 rounded-xl p-2 bg-white/5' : 'opacity-80'}`}>
+            <WardrobeList
+                selectedCategoryIndex={selectedCategoryIndex}
+                expandedCategory={expandedCategory}
+                hoveredItemId={hoveredItemId}
+                isMounted={isMounted}
+                colorScheme={colorScheme}
+                onCategoryClick={handleCategoryClick}
+                onItemSelect={handleItemClick}
+                swipeDirection={swipeDirection}
+            />
+
+            {/* Gesture Hint */}
+            {isPointing && (
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className={`mt-4 p-2 rounded-xl text-xs text-center transition-all duration-500 backdrop-blur-md ${!isMounted
+                        ? 'bg-white/20 border border-white/30'
+                        : lightLevel === 'bright'
+                            ? 'bg-gray-900/80 border border-gray-700/80'
+                            : lightLevel === 'normal'
+                                ? 'bg-white/20 border border-white/30'
+                                : 'bg-white/20 border border-white/30'
+                        }`}
+                >
+                    👆 Apunta para seleccionar
+                </motion.div>
+            )}
+
+            {/* Light Mode Indicator */}
+            {isMounted && (
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 }}
+                    className={`mt-2 p-2 rounded-xl text-xs text-center transition-all duration-500 ${lightLevel === 'dark'
+                        ? 'bg-gray-800/60 border border-gray-600/40'
+                        : lightLevel === 'bright'
+                            ? 'bg-yellow-500/30 border border-yellow-400/50'
+                            : 'bg-white/20 border border-white/30'
+                        }`}
+                >
+                    {lightLevel === 'dark' && '🌙 Modo Oscuro'}
+                    {lightLevel === 'normal' && '💡 Modo Normal'}
+                    {lightLevel === 'bright' && '☀️ Modo Brillante'}
+                </motion.div>
+            )}
+        </div>
+    );
+}
+
+// Memoized list component to prevent re-renders on hand position update
+const WardrobeList = React.memo(({
+    selectedCategoryIndex,
+    expandedCategory,
+    hoveredItemId,
+    isMounted,
+    colorScheme,
+    onCategoryClick,
+    onItemSelect,
+    swipeDirection // Received from parent
+}: any) => {
+    // Refs for scroll containers of each category
+    const categoryRefs = React.useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+    // Handle scroll on swipe
+    useEffect(() => {
+        if (!expandedCategory || !swipeDirection) return;
+
+        const container = categoryRefs.current[expandedCategory];
+        if (container) {
+            const scrollAmount = 120; // Approximately 2 items height
+            if (swipeDirection === "up") {
+                // Swipe UP -> Scroll DOWN (drag content up)
+                container.scrollBy({ top: scrollAmount, behavior: "smooth" });
+            } else if (swipeDirection === "down") {
+                // Swipe DOWN -> Scroll UP (drag content down)
+                container.scrollBy({ top: -scrollAmount, behavior: "smooth" });
+            }
+        }
+    }, [swipeDirection, expandedCategory]);
+
+    return (
+        <>
             {clothingData.map((category, index) => {
                 const isSelected = index === selectedCategoryIndex;
                 const isExpanded = expandedCategory === category.name;
@@ -107,7 +188,7 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.6 + (index * 0.1) }}
-                            onClick={() => handleCategoryClick(category)}
+                            onClick={() => onCategoryClick(category)}
                             className={`
                                 flex items-center justify-between p-3 rounded-xl border 
                                 transition-all duration-500 cursor-pointer group relative
@@ -164,7 +245,11 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
                                     transition={{ duration: 0.3 }}
                                     className="overflow-hidden"
                                 >
-                                    <div className="ml-4 mt-2 space-y-1">
+                                    <div
+                                        ref={(el) => { categoryRefs.current[category.name] = el; }}
+                                        className="ml-4 mt-2 space-y-1 max-h-[220px] overflow-y-auto pr-1 customize-scrollbar"
+                                        style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.2) transparent' }}
+                                    >
                                         {category.items.map((item) => {
                                             const isHovered = hoveredItemId === item.id;
 
@@ -173,7 +258,7 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
                                                     key={item.id}
                                                     initial={{ opacity: 0, x: -10 }}
                                                     animate={{ opacity: 1, x: 0 }}
-                                                    onClick={() => handleItemClick(item)}
+                                                    onClick={() => onItemSelect(item)}
                                                     className={`
                                                         flex items-center justify-between p-2 rounded-md
                                                         transition-all duration-500 cursor-pointer
@@ -202,46 +287,8 @@ const WardrobeWidgets: React.FC<WardrobeWidgetsProps> = ({
                     </div>
                 );
             })}
-
-            {/* Gesture Hint */}
-            {isPointing && (
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className={`mt-4 p-2 rounded-xl text-xs text-center transition-all duration-500 backdrop-blur-md ${!isMounted
-                        ? 'bg-white/20 border border-white/30'
-                        : lightLevel === 'bright'
-                            ? 'bg-gray-900/80 border border-gray-700/80'
-                            : lightLevel === 'normal'
-                                ? 'bg-white/20 border border-white/30'
-                                : 'bg-white/20 border border-white/30'
-                        }`}
-                >
-                    👆 Apunta para seleccionar
-                </motion.div>
-            )}
-
-            {/* Light Mode Indicator */}
-            {isMounted && (
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.8 }}
-                    className={`mt-2 p-2 rounded-xl text-xs text-center transition-all duration-500 ${lightLevel === 'dark'
-                        ? 'bg-gray-800/60 border border-gray-600/40'
-                        : lightLevel === 'bright'
-                            ? 'bg-yellow-500/30 border border-yellow-400/50'
-                            : 'bg-white/20 border border-white/30'
-                        }`}
-                >
-                    {lightLevel === 'dark' && '🌙 Modo Oscuro'}
-                    {lightLevel === 'normal' && '💡 Modo Normal'}
-                    {lightLevel === 'bright' && '☀️ Modo Brillante'}
-                </motion.div>
-            )}
-        </div>
+        </>
     );
-}
+});
 
 export default WardrobeWidgets;
