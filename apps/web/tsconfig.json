@@ -1,26 +1,75 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
+    // ===== TARGET & LIB =====
+    "target": "ES2020",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "useDefineForClassFields": true,
+    // ===== MODULE =====
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
+    // ===== EMIT =====
+    "noEmit": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": false,
+    "removeComments": true,
+    // ===== TYPE CHECKING =====
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    // ===== INTEROP =====
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
+    // ===== JSX =====
     "jsx": "react-jsx",
+    // ===== INCREMENTAL COMPILATION =====
     "incremental": true,
+    "tsBuildInfoFile": ".next/tsbuildinfo",
+    // ===== ALIASES =====
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@/components/*": [
+        "./src/components/*"
+      ],
+      "@/hooks/*": [
+        "./src/hooks/*"
+      ],
+      "@/lib/*": [
+        "./src/lib/*"
+      ],
+      "@/utils/*": [
+        "./src/utils/*"
+      ],
+      "@/types/*": [
+        "./src/types/*"
+      ],
+      "@/context/*": [
+        "./src/context/*"
+      ],
+      "@/data/*": [
+        "./src/data/*"
+      ]
+    },
+    // ===== NEXT.JS SPECIFIC =====
     "plugins": [
       {
         "name": "next"
       }
     ],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
+    "allowJs": true
   },
   "include": [
     "next-env.d.ts",
@@ -30,5 +79,15 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    ".next",
+    "dist",
+    "build"
+  ],
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  }
 }

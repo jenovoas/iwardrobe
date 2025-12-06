@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { throttle } from '@/utils/performance';
 
 export type LightLevel = 'dark' | 'normal' | 'bright';
 
@@ -18,6 +19,7 @@ export interface ColorScheme {
     indicatorBg: string;
 }
 
+// Memoized color schemes for better performance
 const COLOR_SCHEMES: Record<LightLevel, ColorScheme> = {
     dark: {
         categoryBg: 'bg-white/5',
@@ -66,15 +68,26 @@ const COLOR_SCHEMES: Record<LightLevel, ColorScheme> = {
     },
 };
 
+// Configuration for brightness analysis
+const BRIGHTNESS_CONFIG = {
+    UPDATE_INTERVAL: 2000, // ms
+    CANVAS_WIDTH: 80, // Reduced for faster processing
+    CANVAS_HEIGHT: 60,
+    BRIGHTNESS_DARK_THRESHOLD: 60,
+    BRIGHTNESS_BRIGHT_THRESHOLD: 140,
+};
+
 export function useAmbientLight(videoRef?: React.RefObject<HTMLVideoElement | null>) {
     const [isMounted, setIsMounted] = useState(false);
     const [lightLevel, setLightLevel] = useState<LightLevel>('normal');
     const [manualOverride, setManualOverride] = useState<LightLevel | null>(null);
-    // Always start with normal scheme to match SSR
     const [colorScheme, setColorScheme] = useState<ColorScheme>(COLOR_SCHEMES.normal);
+
+    // Performance refs
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const animationFrameRef = useRef<number | null>(null);
     const lastUpdateRef = useRef<number>(0);
+    const analyzeThrottledRef = useRef<Function | null>(null);
 
     // Set mounted state on client side only
     useEffect(() => {
@@ -82,7 +95,6 @@ export function useAmbientLight(videoRef?: React.RefObject<HTMLVideoElement | nu
     }, []);
 
     // Update color scheme when manual override or light level changes
-    // Only update after component is mounted to avoid hydration mismatch
     useEffect(() => {
         if (!isMounted) return;
 
@@ -90,106 +102,111 @@ export function useAmbientLight(videoRef?: React.RefObject<HTMLVideoElement | nu
         setColorScheme(COLOR_SCHEMES[effectiveLevel]);
     }, [lightLevel, manualOverride, isMounted]);
 
-    useEffect(() => {
-        // Don't run until mounted on client or if manual override is active
-        if (!isMounted || !videoRef?.current || manualOverride) {
+    // Analyze brightness with better performance
+    const analyzeBrightness = useCallback(() => {
+        if (!videoRef?.current || !isMounted) return;
+
+        const video = videoRef.current;
+        const now = Date.now();
+
+        // Check update interval
+        if (now - lastUpdateRef.current < BRIGHTNESS_CONFIG.UPDATE_INTERVAL) {
             return;
         }
 
-        // Create a canvas for analyzing video brightness
-        if (!canvasRef.current) {
-            canvasRef.current = document.createElement('canvas');
-            canvasRef.current.width = 160;
-            canvasRef.current.height = 120;
+        // Skip if video is not ready
+        if (video.readyState !== video.HAVE_ENOUGH_DATA) {
+            return;
         }
 
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-
-        if (!ctx) return;
-
-        const analyzeBrightness = () => {
-            const video = videoRef.current;
-            const now = Date.now();
-
-            // Only update every 2 seconds to avoid rapid changes
-            if (now - lastUpdateRef.current < 2000) {
-                animationFrameRef.current = requestAnimationFrame(analyzeBrightness);
-                return;
+        try {
+            // Create or reuse canvas
+            if (!canvasRef.current) {
+                canvasRef.current = document.createElement('canvas');
+                canvasRef.current.width = BRIGHTNESS_CONFIG.CANVAS_WIDTH;
+                canvasRef.current.height = BRIGHTNESS_CONFIG.CANVAS_HEIGHT;
             }
 
-            if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
-                try {
-                    // Draw the current video frame to canvas
-                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const canvas = canvasRef.current;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            if (!ctx) return;
 
-                    // Get image data
-                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    const data = imageData.data;
+            // Draw video frame to canvas
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-                    // Calculate average brightness
-                    let totalBrightness = 0;
-                    const pixelCount = data.length / 4;
+            // Get image data
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
 
-                    for (let i = 0; i < data.length; i += 4) {
-                        // Calculate perceived brightness using luminance formula
-                        const r = data[i];
-                        const g = data[i + 1];
-                        const b = data[i + 2];
-                        const brightness = (0.299 * r + 0.587 * g + 0.114 * b);
-                        totalBrightness += brightness;
-                    }
+            // Calculate average brightness using luminance formula
+            let totalBrightness = 0;
+            const pixelCount = data.length / 4;
 
-                    const avgBrightness = totalBrightness / pixelCount;
-
-                    // Determine light level based on brightness thresholds
-                    let newLightLevel: LightLevel;
-                    if (avgBrightness < 60) {
-                        newLightLevel = 'dark';
-                    } else if (avgBrightness < 140) {
-                        newLightLevel = 'normal';
-                    } else {
-                        newLightLevel = 'bright';
-                    }
-
-                    // Only update if the level changed
-                    if (newLightLevel !== lightLevel) {
-                        setLightLevel(newLightLevel);
-                    }
-
-                    lastUpdateRef.current = now;
-                } catch (error) {
-                    console.error('Error analyzing brightness:', error);
-                }
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                totalBrightness += 0.299 * r + 0.587 * g + 0.114 * b;
             }
 
-            animationFrameRef.current = requestAnimationFrame(analyzeBrightness);
+            const avgBrightness = totalBrightness / pixelCount;
+
+            // Determine light level
+            let newLightLevel: LightLevel;
+            if (avgBrightness < BRIGHTNESS_CONFIG.BRIGHTNESS_DARK_THRESHOLD) {
+                newLightLevel = 'dark';
+            } else if (avgBrightness < BRIGHTNESS_CONFIG.BRIGHTNESS_BRIGHT_THRESHOLD) {
+                newLightLevel = 'normal';
+            } else {
+                newLightLevel = 'bright';
+            }
+
+            // Update state only if changed
+            if (newLightLevel !== lightLevel) {
+                setLightLevel(newLightLevel);
+            }
+
+            lastUpdateRef.current = now;
+        } catch (error) {
+            console.error('[AmbientLight] Error analyzing brightness:', error);
+        }
+    }, [videoRef, lightLevel, isMounted]);
+
+    // Set up brightness analysis loop
+    useEffect(() => {
+        if (!isMounted || !videoRef?.current || manualOverride) {
+            if (animationFrameRef.current) {
+                cancelAnimationFrame(animationFrameRef.current);
+                animationFrameRef.current = null;
+            }
+            return;
+        }
+
+        const analyzeLoop = () => {
+            analyzeBrightness();
+            animationFrameRef.current = requestAnimationFrame(analyzeLoop);
         };
 
-        // Start analyzing
-        analyzeBrightness();
+        analyzeLoop();
 
         // Cleanup
         return () => {
             if (animationFrameRef.current) {
                 cancelAnimationFrame(animationFrameRef.current);
+                animationFrameRef.current = null;
             }
         };
-    }, [isMounted, videoRef, lightLevel, manualOverride]);
+    }, [isMounted, videoRef, manualOverride, analyzeBrightness]);
 
-    const toggleLightMode = () => {
-        if (!manualOverride) {
-            // Start with bright mode when enabling manual override
-            setManualOverride('bright');
-        } else if (manualOverride === 'bright') {
-            setManualOverride('normal');
-        } else if (manualOverride === 'normal') {
-            setManualOverride('dark');
-        } else {
-            // Return to auto mode
-            setManualOverride(null);
-        }
-    };
+    // Toggle light mode
+    const toggleLightMode = useCallback(() => {
+        setManualOverride(prev => {
+            if (!prev) return 'bright';
+            if (prev === 'bright') return 'normal';
+            if (prev === 'normal') return 'dark';
+            return null;
+        });
+    }, []);
 
     const effectiveLightLevel = manualOverride || lightLevel;
 
@@ -199,7 +216,8 @@ export function useAmbientLight(videoRef?: React.RefObject<HTMLVideoElement | nu
         isMounted,
         toggleLightMode,
         isManualMode: manualOverride !== null,
-        autoDetectedLevel: lightLevel
+        autoDetectedLevel: lightLevel,
     };
 }
+
 

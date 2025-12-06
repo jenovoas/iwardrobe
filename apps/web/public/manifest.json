@@ -1,0 +1,85 @@
+{
+  "name": "iWARDROBE Smart Mirror",
+  "short_name": "iWARDROBE",
+  "description": "AI-powered smart mirror for personalized fashion and lifestyle recommendations",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "orientation": "portrait-primary",
+  "theme_color": "#000000",
+  "background_color": "#0a0a0a",
+  "categories": ["fashion", "lifestyle", "shopping"],
+  "screenshots": [
+    {
+      "src": "/images/screenshot-1.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/images/screenshot-2.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Virtual Try-On",
+      "short_name": "Try-On",
+      "description": "Start virtual try-on for clothing items",
+      "url": "/?tab=virtual-tryon",
+      "icons": [{ "src": "/icons/tryon.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
+      "name": "Wardrobe",
+      "short_name": "Wardrobe",
+      "description": "View your wardrobe collection",
+      "url": "/?tab=wardrobe",
+      "icons": [{ "src": "/icons/wardrobe.png", "sizes": "96x96", "type": "image/png" }]
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "media",
+          "accept": ["image/*", "video/*"]
+        }
+      ]
+    }
+  },
+  "prefer_related_applications": false
+}
