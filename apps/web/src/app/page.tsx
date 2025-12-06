@@ -168,16 +168,15 @@ export default function Home() {
           />
         )}
 
-        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-40 pointer-events-auto flex justify-center">
-          <WeatherWidget videoRef={videoRef} />
-        </div>
-
         <motion.header
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8 }}
-          className="flex justify-between items-start p-8 h-full pointer-events-none"
+          className="flex justify-between items-start p-8 h-full pointer-events-none relative"
         >
+          <div className="absolute top-8 left-1/2 -translate-x-1/2 z-40 pointer-events-auto flex justify-center">
+            <WeatherWidget videoRef={videoRef} />
+          </div>
             <div className="flex flex-col h-full justify-between pointer-events-auto">
             <div className="flex flex-col gap-4">
               <div className="p-3 rounded-xl backdrop-blur-md bg-black/10 w-fit relative">
