@@ -17,6 +17,7 @@ import ClothingDetailPanel from "@/components/widgets/ClothingDetailPanel";
 import HairStyleWidget from "@/components/widgets/HairStyleWidget";
 import BeardStyleWidget from "@/components/widgets/BeardStyleWidget";
 import ShoppingWidget from "@/components/widgets/ShoppingWidget";
+import TryOnWidget, { OutfitState } from "@/components/widgets/TryOnWidget";
 import Clock from "@/components/common/Clock"; // Import isolated Clock
 import { useSmartMirror } from "@/hooks/useSmartMirror";
 import { ClothingItem } from "@/data/clothingData";
@@ -51,6 +52,7 @@ export default function Home() {
   const [isAriaListening, setIsAriaListening] = React.useState(false);
   const [isTryOnActive, setIsTryOnActive] = React.useState(false);
   const [selectedClothingItem, setSelectedClothingItem] = React.useState<ClothingItem | null>(null);
+  const [outfit, setOutfit] = React.useState<OutfitState>({});
 
   // Widget Navigation State
   const [activeView, setActiveView] = React.useState<'menu' | 'wardrobe' | 'hair' | 'beard' | 'shopping'>('menu');
@@ -108,9 +110,30 @@ export default function Home() {
   };
 
   const handleTryOn = (item: ClothingItem) => {
+    let slot: keyof OutfitState | undefined;
+    if (item.category === "Camisas" || item.category === "Abrigos") slot = "top";
+    else if (item.category === "Pantalones") slot = "bottom";
+    else if (item.category === "Zapatos") slot = "feet";
+    else if (item.category === "Accesorios") slot = "accessories";
+
+    if (slot) {
+      setOutfit(prev => ({ ...prev, [slot]: item }));
+    }
+
     setIsTryOnActive(true);
     setSelectedClothingItem(null);
-    console.log("Trying on:", item.name);
+  };
+
+  const handleRemoveItem = (slot: keyof OutfitState) => {
+    setOutfit(prev => {
+      const newOutfit = { ...prev };
+      delete newOutfit[slot];
+      return newOutfit;
+    });
+  };
+
+  const handleClearOutfit = () => {
+    setOutfit({});
   };
 
   const handleCloseDetail = () => {
@@ -409,6 +432,14 @@ export default function Home() {
           />
         )
       }
+      <TryOnWidget
+        outfit={outfit}
+        onRemoveItem={handleRemoveItem}
+        onClearOutfit={handleClearOutfit}
+        onClose={() => setIsTryOnActive(false)}
+        isVisible={isTryOnActive}
+        videoRef={videoRef}
+      />
     </main >
   );
 }
