@@ -55,10 +55,9 @@ declare global {
 
 interface ChatInterfaceProps {
     isListening: boolean;
-    onToggleListening: () => void;
 }
 
-const ChatInterface = ({ isListening, onToggleListening }: ChatInterfaceProps) => {
+const ChatInterface = ({ isListening }: ChatInterfaceProps) => {
     const speak = (text: string) => {
         if ("speechSynthesis" in window) {
             // Cancel any current speaking

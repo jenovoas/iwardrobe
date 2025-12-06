@@ -17,22 +17,13 @@ const nextConfig: NextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   
-  // CSS optimization (Tailwind with Turbopack)
+  // CSS optimization (Tailwind)
   experimental: {
     optimizeCss: true,
-    // Enable Turbopack for faster builds (Comment if not stable)
-    turbo: {
-      rules: {
-        "*.svg": {
-          loaders: ["@svgr/webpack"],
-          as: "*.js",
-        },
-      },
-      resolveAlias: {
-        "@": "./src",
-      },
-    },
   },
+  
+  // Turbopack configuration (for Next.js 16)
+  turbopack: {},
   
   // Enable React strict mode for development
   reactStrictMode: true,

@@ -73,12 +73,6 @@ export const metadata: Metadata = {
     startupImage: "/icons/icon-512.png",
   },
   
-  // Microsoft specific
-  msApplication: {
-    TileColor: "#0a0a0a",
-    TileImage: "/icons/icon-512.png",
-  },
-  
   // Alternate links for different formats
   alternates: {
     canonical: "https://iwardrobe.app",
