@@ -37,7 +37,17 @@ export const WidgetMenuItem = ({
           : 'rgba(255,255,255,0.05)',
       }}
       onClick={onClick}
-      className={`p-4 rounded-xl backdrop-blur-md border border-white/10 flex items-center gap-4 transition-all duration-300 cursor-pointer hover:bg-white/10 ${
+      role="button"
+      tabIndex={0}
+      aria-pressed={isFocused}
+      aria-label={label}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      className={`p-4 rounded-xl backdrop-blur-md border border-white/10 flex items-center gap-4 transition-all duration-300 cursor-pointer hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/70 ${
         isFocused ? 'ring-2 ring-white/50 shadow-lg' : ''
       }`}
     >

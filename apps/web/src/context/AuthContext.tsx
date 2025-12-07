@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { jwtDecode } from "jwt-decode";
 
-interface User {
+export interface User {
     email: string;
     // Add other user fields as needed
 }
