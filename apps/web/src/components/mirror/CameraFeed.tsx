@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, forwardRef, useCallback, useRef, useMemo } from "react";
+import { useEffect, useState, forwardRef, useCallback, useRef, useMemo } from "react";
 import Webcam from "react-webcam";
 
 interface CameraFeedProps {

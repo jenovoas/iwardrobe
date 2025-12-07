@@ -199,8 +199,7 @@ export default function Home() {
                     <WidgetMenuItem
                       key={config.type}
                       label={config.label}
-                      index={index}
-                      type={config.type}
+                                            type={config.type}
                       isFocused={focusedWidgetIndex === index}
                       onClick={() => {
                         setActiveView(config.type);
