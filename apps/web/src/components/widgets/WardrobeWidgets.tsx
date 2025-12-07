@@ -155,7 +155,7 @@ interface WardrobeListProps {
     colorScheme: ReturnType<typeof useAmbientLight>['colorScheme'];
     onCategoryClick: (category: ClothingCategory) => void;
     onItemSelect: (item: ClothingItem) => void;
-    swipeDirection: "left" | "right" | "up" | "down" | null;
+    swipeDirection: "left" | "right" | "up" | "down" | null | undefined;
 }
 
 // Memoized list component to prevent re-renders on hand position update
