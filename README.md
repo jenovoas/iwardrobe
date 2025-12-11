@@ -2,157 +2,371 @@
 
 **Smart Mirror Platform** - Your AI-Powered Virtual Wardrobe Assistant
 
-iWARDROBE is an intelligent smart mirror platform that combines computer vision, AI recommendations, and voice interaction to revolutionize your daily outfit selection experience.
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=next.js&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
+![MediaPipe](https://img.shields.io/badge/MediaPipe-2D9CDB?style=flat-square&logo=google&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=flat-square&logo=postgresql&logoColor=white)
 
-## 🌟 Features
+---
 
-### ARIA - AI Voice Assistant
-- **Continuous Voice Interaction**: Hands-free control with automatic voice detection
-- **Smart Recommendations**: Personalized outfit suggestions based on weather, events, and preferences
-- **Natural Conversations**: Powered by advanced AI for natural dialogue
+## 🎯 Descripción
 
-### Virtual Try-On
-- **Real-time Pose Detection**: MediaPipe-powered body tracking
-- **Gesture Controls**: Intuitive hand gestures to activate and control features
-- **AR Clothing Overlay**: See how outfits look on you in real-time
+iWARDROBE es una plataforma inteligente de espejo virtual que revoluciona cómo seleccionas tu atuendo diario. Combina:
 
-### Smart Widgets
-- **Weather Integration**: Real-time weather data with automatic location detection
-- **Wardrobe Analytics**: Track your clothing usage and preferences
-- **Event Calendar**: Outfit suggestions based on your schedule
+- 🤖 **Inteligencia Artificial** - Recomendaciones personalizadas
+- 📷 **Visión por Computadora** - Detección de pose en tiempo real
+- 🗣️ **Interfaz de Voz** - Asistente ARIA con conversación natural
+- 🎨 **Realidad Aumentada** - Prueba virtual de ropa
+- 📊 **Analytics** - Análisis inteligente de tu guardarropa
 
-### Biometric Analysis
-- **Body Measurements**: Automated measurement tracking
-- **Fit Recommendations**: Personalized sizing suggestions
-- **Progress Tracking**: Monitor changes over time
+---
 
-## 🏗️ Architecture
+## ✨ Características Principales
 
-This is a monorepo project with the following structure:
+### 🤖 ARIA - AI Voice Assistant
+- **Conversación Continua**: Detección automática de voz con soporte para comandos naturales
+- **Recomendaciones Inteligentes**: Sugerencias de outfits basadas en clima, eventos y preferencias
+- **Diálogos Naturales**: Powered by advanced AI para conversaciones fluidas
+
+### 👕 Prueba Virtual (Virtual Try-On)
+- **Detección de Pose**: Body tracking en tiempo real con MediaPipe
+- **Controles por Gesto**: Interacción hands-free intuitiva
+- **Overlay de AR**: Visualiza cómo se ven las prendas en ti
+
+### 🌤️ Widgets Inteligentes
+- **Integración de Clima**: Datos meteorológicos en tiempo real
+- **Analytics de Guardarropa**: Estadísticas de uso de prendas
+- **Calendario de Eventos**: Sugerencias de atuendos por evento
+
+### 📏 Análisis Biométrico
+- **Medidas Automáticas**: Tracking de medidas corporales
+- **Recomendaciones de Talla**: Sugerencias personalizadas de ajuste
+- **Historial de Cambios**: Monitorea tu evolución
+
+---
+
+## 🏗️ Arquitectura
 
 ```
 iwardrobe/
 ├── apps/
-│   ├── api/          # FastAPI backend
-│   └── web/          # Next.js frontend
-└── packages/         # Shared packages
+│   ├── api/          # Backend FastAPI
+│   │   ├── app/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   └── services/
+│   └── web/          # Frontend Next.js
+│       ├── app/
+│       ├── components/
+│       └── lib/
+└── packages/         # Librerías compartidas
 ```
+
+### 🔙 Backend (FastAPI)
+- **Autenticación**: JWT tokens seguros
+- **API Biometrics**: Tracking de medidas corporales
+- **Engine de Recomendaciones**: IA para sugerencias de outfits
+- **Base de Datos**: PostgreSQL + SQLAlchemy ORM
+- **API Documentation**: Swagger/OpenAPI automático
+
+### 🎨 Frontend (Next.js)
+- **React 18+**: TypeScript para type safety
+- **Tailwind CSS**: Diseño responsive
+- **MediaPipe**: Detección de pose y manos
+- **Web Speech API**: Integración de voz
+- **Canvas API**: Renderizado en tiempo real
+
+---
+
+## 🚀 Instalación Rápida
+
+### Requisitos Previos
+- Node.js 18+
+- Python 3.9+
+- PostgreSQL 12+
+- npm o yarn
 
 ### Backend (FastAPI)
-- **Authentication**: Secure user authentication with JWT tokens
-- **Biometrics API**: Body measurement tracking and analysis
-- **Recommendation Engine**: AI-powered outfit suggestions
-- **Database**: PostgreSQL with SQLAlchemy ORM
 
-### Frontend (Next.js)
-- **React 18+**: Modern React with TypeScript
-- **Tailwind CSS**: Utility-first styling
-- **MediaPipe**: Real-time pose and hand gesture detection
-- **Voice Integration**: Web Speech API for ARIA
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 18+ and npm
-- Python 3.9+
-- PostgreSQL database
-
-### Installation
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/jenovoas/iwardrobe.git
-cd iwardrobe
-```
-
-2. **Setup Backend**
 ```bash
 cd apps/api
+
+# Crear virtual environment
+python -m venv venv
+source venv/bin/activate  # En Windows: venv\Scripts\activate
+
+# Instalar dependencias
 pip install -r requirements.txt
-# Configure your database connection in .env
+
+# Configurar base de datos
+cp .env.example .env
+# Edita .env con tus credenciales
+
+# Ejecutar migraciones
+alembic upgrade head
+
+# Iniciar servidor
 python -m uvicorn app.main:app --reload
 ```
 
-3. **Setup Frontend**
+**API Docs disponible en**: http://localhost:8000/docs
+
+### Frontend (Next.js)
+
 ```bash
 cd apps/web
+
+# Instalar dependencias
 npm install
+
+# Configurar variables de entorno
+cp .env.example .env.local
+
+# Iniciar servidor de desarrollo
 npm run dev
 ```
 
-4. **Access the application**
-- Frontend: http://localhost:3000
-- API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
+**Aplicación disponible en**: http://localhost:3000
 
-## 🔧 Configuration
+---
 
-Create a `.env` file in the `apps/api` directory:
+## ⚙️ Configuración
+
+### Variables de Entorno (Backend)
+
+Crear `apps/api/.env`:
 
 ```env
 DATABASE_URL=postgresql://user:password@localhost/iwardrobe
-SECRET_KEY=your-secret-key-here
+SECRET_KEY=your-super-secret-key-here
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# OpenAI (opcional para IA mejorada)
+OPENAI_API_KEY=sk-...
+
+# AWS (opcional para storage de imágenes)
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+AWS_S3_BUCKET=...
 ```
 
-## 📱 Usage
+### Variables de Entorno (Frontend)
 
-1. **Login/Register**: Create your account or sign in
-2. **Setup Profile**: Add your measurements and preferences
-3. **Voice Activation**: Say "Hey ARIA" to activate the voice assistant
-4. **Gesture Controls**: Use hand gestures to navigate and try on clothes
-5. **Get Recommendations**: Ask ARIA for outfit suggestions
+Crear `apps/web/.env.local`:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_APP_NAME=iWARDROBE
+```
+
+---
+
+## 📖 Guía de Uso
+
+### 1️⃣ Crear Cuenta
+- Registrate o inicia sesión
+- Completa tu perfil con preferencias
+
+### 2️⃣ Configurar Medidas
+- Activa la cámara para medidas automáticas
+- O ingresa manualmente tus medidas
+
+### 3️⃣ Añadir Guardarropa
+- Fotografía tu ropa
+- Categoriza por tipo, color, temporada
+- Asigna tallas personalizadas
+
+### 4️⃣ Activar ARIA
+- Di "Hey ARIA" para activar el asistente
+- Pide recomendaciones de outfits
+- Prueba ropa con AR overlay
+
+### 5️⃣ Analizar Datos
+- Revisa estadísticas de uso
+- Descubre tus prendas favoritas
+- Optimiza tu guardarropa
+
+---
+
+## 🛠️ Comandos Disponibles
+
+### Backend
+```bash
+cd apps/api
+
+# Desarrollo
+python -m uvicorn app.main:app --reload
+
+# Tests
+pytest test_auth.py
+pytest test_biometrics.py
+pytest test_recommendations.py
+
+# Migraciones
+alembic current
+alembic upgrade head
+alembic revision --autogenerate -m "description"
+```
+
+### Frontend
+```bash
+cd apps/web
+
+# Desarrollo
+npm run dev
+
+# Build
+npm run build
+
+# Tests
+npm test
+
+# Linting
+npm run lint
+```
+
+---
 
 ## 🧪 Testing
 
 ### Backend Tests
 ```bash
 cd apps/api
-pytest test_auth.py
-pytest test_biometrics.py
-pytest test_recommendation.py
+pytest                    # Ejecutar todos
+pytest -v                # Verbose
+pytest -k "test_auth"   # Tests específicos
 ```
 
 ### Frontend Tests
 ```bash
 cd apps/web
-npm test
+npm test                 # Jest
+npm run test:e2e        # E2E con Playwright
 ```
-
-## 🛠️ Tech Stack
-
-**Frontend:**
-- Next.js 15
-- TypeScript
-- Tailwind CSS
-- MediaPipe
-- Web Speech API
-
-**Backend:**
-- FastAPI
-- SQLAlchemy
-- PostgreSQL
-- JWT Authentication
-- Python 3.9+
-
-**AI/ML:**
-- MediaPipe (Pose & Hand Detection)
-- Custom Recommendation Engine
-- Voice Recognition
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👨‍💻 Author
-
-**jnovoas** - [GitHub](https://github.com/jenovoas)
-
-## 🤝 Contributing
-
-This is a private project. For any questions or suggestions, please contact the author.
 
 ---
 
-Made with ❤️ by jenovoas
+## 📚 Tech Stack Completo
+
+### Frontend
+- **Next.js 15** - React framework con SSR/SSG
+- **TypeScript** - Type-safe development
+- **Tailwind CSS** - Utility-first CSS
+- **MediaPipe** - Pose & hand detection
+- **Web Speech API** - Voice interaction
+- **Canvas API** - Real-time rendering
+
+### Backend
+- **FastAPI** - Modern Python web framework
+- **SQLAlchemy** - ORM para Python
+- **PostgreSQL** - Base de datos relacional
+- **JWT** - Autenticación segura
+- **Pydantic** - Data validation
+- **Alembic** - Database migrations
+
+### AI/ML
+- **MediaPipe** - Computer vision
+- **Custom ML Models** - Recommendation engine
+- **OpenAI API** - Enhanced AI (optional)
+
+### DevOps
+- **Docker** - Containerización
+- **Docker Compose** - Orquestación local
+- **GitHub Actions** - CI/CD
+
+---
+
+## 📊 Estructura de Carpetas
+
+```
+apps/web/
+├── app/                # Next.js App Router
+│   ├── auth/          # Autenticación
+│   ├── dashboard/     # Panel principal
+│   └── wardrobe/      # Gestor de prendas
+├── components/        # React components
+│   ├── ARIA/         # Voice assistant
+│   ├── VirtualTryOn/ # AR try-on
+│   └── Widgets/      # Widgets inteligentes
+├── lib/               # Utilidades
+└── hooks/             # Custom React hooks
+
+apps/api/
+├── app/
+│   ├── main.py       # Entrada principal
+│   ├── models/       # SQLAlchemy models
+│   ├── schemas/      # Pydantic schemas
+│   ├── routes/       # API endpoints
+│   └── services/     # Lógica de negocio
+├── tests/
+├── migrations/       # Alembic migrations
+└── requirements.txt
+```
+
+---
+
+## 🔐 Seguridad
+
+- ✅ JWT Authentication con refresh tokens
+- ✅ Password hashing con bcrypt
+- ✅ CORS configurado
+- ✅ Rate limiting en API
+- ✅ Input validation con Pydantic
+- ✅ HTTPS recomendado en producción
+
+---
+
+## 📈 Optimizaciones Implementadas
+
+- 🚀 Image optimization y lazy loading
+- 💨 Code splitting automático
+- 🎯 Tree shaking
+- 📦 Bundle size optimizado
+- ♿ Accesibilidad WCAG 2.1 AA
+- 📱 Mobile-first responsive design
+
+---
+
+## 🤝 Contribuir
+
+Las contribuciones son bienvenidas:
+
+1. Fork el proyecto
+2. Crea rama: `git checkout -b feature/feature-name`
+3. Commit: `git commit -m 'Add feature'`
+4. Push: `git push origin feature/feature-name`
+5. Pull Request
+
+---
+
+## 📄 Licencia
+
+MIT License - Ver [LICENSE](LICENSE) para detalles.
+
+---
+
+## 👨‍💻 Autor
+
+**Juan Novoa** - [@jenovoas](https://github.com/jenovoas)
+
+Sígueme en:
+- 🐙 [GitHub](https://github.com/jenovoas)
+- 💼 [LinkedIn](https://linkedin.com/in/jenovoas)
+- 🐦 [Twitter](https://twitter.com/jenovoas)
+
+---
+
+## 🙏 Agradecimientos
+
+- MediaPipe por herramientas de CV
+- Next.js y FastAPI por excelentes frameworks
+- La comunidad open source
+
+<div align="center">
+
+⭐ **Si te gusta este proyecto, dame una estrella en GitHub** ⭐
+
+</div>
